@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144">
+    <rect width="144" height="144" rx="18" fill="#1A1A2E"/>
+    <!-- Anthropic-style diamond/crystal mark -->
+    <polygon points="72,20 108,55 72,72 36,55" fill="#CC785C" opacity="0.95"/>
+    <polygon points="72,72 108,55 108,90 72,124" fill="#A0522D" opacity="0.9"/>
+    <polygon points="72,72 36,55 36,90 72,124" fill="#8B4513" opacity="0.85"/>
+</svg>

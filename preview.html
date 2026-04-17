@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stream Deck Button Previews</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            margin: 0;
+        }
+        h1 {
+            margin-bottom: 40px;
+            font-weight: 300;
+            letter-spacing: 1px;
+            color: #ececec;
+        }
+        .container {
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 1000px;
+        }
+        .card {
+            background-color: #1e1e1e;
+            padding: 24px;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+        }
+        .svg-container {
+            width: 144px;
+            height: 144px;
+            border-radius: 16px;
+            background-color: #000;
+            margin: 0 auto 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+        .label {
+            font-size: 14px;
+            color: #aaaaaa;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stream Deck SVGs Preview</h1>
+    <div class="container">
+        
+        <div class="card">
+            <div class="svg-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
+                    <rect width="144" height="144" fill="#0a0a0a" />
+                    <circle cx="72" cy="72" r="52" fill="none" stroke="#1e293b" stroke-width="8" />
+                    <circle cx="72" cy="72" r="52" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4 6" />
+                    <text x="72" y="86" font-family="sans-serif" font-size="44" font-weight="bold" fill="#fff" text-anchor="middle">450</text>
+                    <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">LEFT</text>
+                    <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">COPILOT</text>
+                </svg>
+            </div>
+            <div class="label">Copilot Quota</div>
+        </div>
+
+        <div class="card">
+            <div class="svg-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
+                    <rect width="144" height="144" fill="#0a0a0a" />
+                    <circle cx="72" cy="72" r="48" fill="none" stroke="#222" stroke-width="10" />
+                    <circle cx="72" cy="72" r="48" fill="none" stroke="#10b981" stroke-width="10" 
+                        stroke-dasharray="301.59" stroke-dashoffset="165.87" stroke-linecap="round" 
+                        transform="rotate(-90 72 72)" />
+                    <text x="72" y="84" font-family="sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">45%</text>
+                    <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">5H</text>
+                    <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="2">CLAUDE</text>
+                </svg>
+            </div>
+            <div class="label">Claude Usage (Good)</div>
+        </div>
+
+        <div class="card">
+            <div class="svg-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
+                    <rect width="144" height="144" fill="#0a0a0a" />
+                    <circle cx="72" cy="72" r="48" fill="none" stroke="#222" stroke-width="10" />
+                    <circle cx="72" cy="72" r="48" fill="none" stroke="#f59e0b" stroke-width="10" 
+                        stroke-dasharray="301.59" stroke-dashoffset="45.24" stroke-linecap="round" 
+                        transform="rotate(-90 72 72)" />
+                    <text x="72" y="84" font-family="sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">85%</text>
+                    <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">7D</text>
+                    <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="2">CLAUDE</text>
+                </svg>
+            </div>
+            <div class="label">Claude Usage (Warning)</div>
+        </div>
+
+        <div class="card">
+            <div class="svg-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
+                    <rect width="144" height="144" fill="#0a0a0a" />
+                    <circle cx="72" cy="72" r="58" fill="none" stroke="#222" stroke-width="4" stroke-dasharray="6 6" />
+                    <text x="72" y="82" font-family="sans-serif" font-size="28" font-weight="bold" fill="#ef4444" text-anchor="middle">403</text><text x="72" y="125" font-family="sans-serif" font-size="14" fill="#888" text-anchor="middle">Expired?</text>
+                </svg>
+            </div>
+            <div class="label">Error State</div>
+        </div>
+
+        <div class="card">
+            <div class="svg-container">
+                <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
+                    <rect width="144" height="144" fill="#0a0a0a" />
+                    <circle cx="72" cy="72" r="40" fill="none" stroke="#333" stroke-width="6" />
+                    <circle cx="72" cy="72" r="40" fill="none" stroke="#666" stroke-width="6" stroke-dasharray="164.93" stroke-dashoffset="82.46">
+                        <animateTransform attributeName="transform" type="rotate" from="0 72 72" to="360 72 72" dur="1s" repeatCount="indefinite" />
+                    </circle>
+                </svg>
+            </div>
+            <div class="label">Loading State</div>
+        </div>
+
+    </div>
+</body>
+</html>

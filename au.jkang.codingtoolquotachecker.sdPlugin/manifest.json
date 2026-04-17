@@ -1,0 +1,59 @@
+{
+    "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
+    "UUID": "au.jkang.codingtoolquotachecker",
+    "Name": "Copilot Quota Marker",
+    "Version": "1.0.0.0",
+    "Author": "Developer",
+    "Description": "Checks GitHub Copilot remaining premium requests and Claude Code usage.",
+    "Icon": "imgs/icon",
+    "Category": "Utilities",
+    "CategoryIcon": "imgs/icon",
+    "Actions": [
+        {
+            "Name": "Copilot Quota",
+            "UUID": "au.jkang.codingtoolquotachecker.action",
+            "Icon": "imgs/icon",
+            "Tooltip": "Displays remaining Copilot premium quota",
+            "PropertyInspectorPath": "pi.html",
+            "States": [
+                {
+                    "Image": "imgs/icon",
+                    "TitleAlignment": "middle"
+                }
+            ],
+            "Controllers": ["Keypad"]
+        },
+        {
+            "Name": "Claude Code Usage",
+            "UUID": "au.jkang.codingtoolquotachecker.claude",
+            "Icon": "imgs/claude-icon",
+            "Tooltip": "Displays Claude Code usage percentage for the selected window",
+            "PropertyInspectorPath": "pi-claude.html",
+            "States": [
+                {
+                    "Image": "imgs/claude-icon",
+                    "TitleAlignment": "middle"
+                }
+            ],
+            "Controllers": ["Keypad"]
+        }
+    ],
+    "CodePath": "bin/plugin.js",
+    "SDKVersion": 2,
+    "Software": {
+        "MinimumVersion": "6.6"
+    },
+    "OS": [
+        {
+            "Platform": "windows",
+            "MinimumVersion": "10"
+        },
+        {
+            "Platform": "mac",
+            "MinimumVersion": "10.15"
+        }
+    ],
+    "Nodejs": {
+        "Version": "20"
+    }
+}
