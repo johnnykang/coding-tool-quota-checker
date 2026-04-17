@@ -40,35 +40,50 @@ export function generateMessageSvg(title: string, subtitle?: string, color: stri
     `);
 }
 
-export function generatePercentageSvg(percentage: number, label: string): string {
+export function generatePercentageSvg(usagePercentage: number, label: string): string {
     const r = 48;
     const c = 2 * Math.PI * r;
-    const offset = c - (percentage / 100) * c;
+    // 0% usage -> 100% filled, 100% usage -> 0% filled
+    const remainingPercentage = Math.max(0, 100 - usagePercentage);
+    const dash = (remainingPercentage / 100) * c;
+    const gap = c;
     
     let color = "#10b981"; // Emerald (Good)
-    if (percentage >= 90) color = "#ef4444"; // Red (Critical)
-    else if (percentage >= 70) color = "#f59e0b"; // Amber (Warning)
+    if (usagePercentage >= 90) color = "#ef4444"; // Red (Critical)
+    else if (usagePercentage >= 70) color = "#f59e0b"; // Amber (Warning)
     
     return encodeSvg(`
         <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
             <rect width="144" height="144" fill="#0a0a0a" />
             <circle cx="72" cy="72" r="${r}" fill="none" stroke="#222" stroke-width="10" />
-            <circle cx="72" cy="72" r="${r}" fill="none" stroke="${color}" stroke-width="10" 
-                stroke-dasharray="${c}" stroke-dashoffset="${offset}" stroke-linecap="round" 
-                transform="rotate(-90 72 72)" />
-            <text x="72" y="84" font-family="sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">${percentage}%</text>
+            ${remainingPercentage > 0 ? `<circle cx="72" cy="72" r="${r}" fill="none" stroke="${color}" stroke-width="10" 
+                stroke-dasharray="${dash} ${gap}" stroke-dashoffset="0" stroke-linecap="round" 
+                transform="rotate(-90 72 72)" />` : ""}
+            <text x="72" y="84" font-family="sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">${usagePercentage}%</text>
             <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
             <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="2">CLAUDE</text>
         </svg>
     `);
 }
 
-export function generateCountSvg(count: number, label: string = "LEFT"): string {
+export function generateCountSvg(count: number, limit: number, label: string = "LEFT"): string {
+    const percentage = limit > 0 ? Math.max(0, Math.min(100, (count / limit) * 100)) : 0;
+    const r = 48;
+    const c = 2 * Math.PI * r;
+    const dash = (percentage / 100) * c;
+    const gap = c;
+
+    let color = "#3b82f6"; // Blue
+    if (percentage <= 10) color = "#ef4444"; // Red (Critical)
+    else if (percentage <= 30) color = "#f59e0b"; // Amber (Warning)
+
     return encodeSvg(`
         <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
             <rect width="144" height="144" fill="#0a0a0a" />
-            <circle cx="72" cy="72" r="52" fill="none" stroke="#1e293b" stroke-width="8" />
-            <circle cx="72" cy="72" r="52" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="4 6" />
+            <circle cx="72" cy="72" r="${r}" fill="none" stroke="#222" stroke-width="10" />
+            ${percentage > 0 ? `<circle cx="72" cy="72" r="${r}" fill="none" stroke="${color}" stroke-width="10" 
+                stroke-dasharray="${dash} ${gap}" stroke-dashoffset="0" stroke-linecap="round" 
+                transform="rotate(-90 72 72)" />` : ""}
             <text x="72" y="86" font-family="sans-serif" font-size="44" font-weight="bold" fill="#fff" text-anchor="middle">${count}</text>
             <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
             <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">COPILOT</text>

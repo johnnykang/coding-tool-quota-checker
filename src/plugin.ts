@@ -41,9 +41,10 @@ async function checkCopilotQuota(action: KeyAction<CopilotSettings>) {
 
         const data = await response.json();
         const remaining = data?.quota_snapshots?.premium_interactions?.remaining;
+        const limit = data?.quota_snapshots?.premium_interactions?.entitlement || remaining;
 
         if (remaining !== undefined) {
-            await action.setImage(generateCountSvg(remaining, "LEFT"));
+            await action.setImage(generateCountSvg(remaining, limit, "LEFT"));
         } else {
             await action.setImage(generateMessageSvg("Err", "Data"));
         }
