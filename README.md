@@ -1,5 +1,7 @@
 # Copilot & Claude Quota Checker
 
+![Screenshot](images/screenshot.png)
+
 A Stream Deck plugin to seamlessly monitor your GitHub Copilot premium interactions quota and Anthropic Claude Code usage directly from your Elgato Stream Deck.
 
 ## Features
