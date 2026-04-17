@@ -32,9 +32,9 @@ To use the plugin, drag one of the actions onto your Stream Deck and configure i
 
 ### Copilot Quota
 
-*   **GitHub Copilot Auth Token:** Your GitHub authorization token (e.g., `ghu_...`). This token requires access to the internal Copilot user API. Because this is an undocumented internal API, a standard Personal Access Token (PAT) will not work.
-    *   **Requirements:** You need a GitHub User token (`ghu_...`) and an active GitHub Copilot subscription. The token needs at least the `read:user` scope.
-    *   **How to get it:** The easiest way to obtain a working `ghu_` token is to log into GitHub Copilot in your IDE (like VS Code or JetBrains) and extract the token from the extension's logs or configuration files (e.g., `apps.json` or `github-copilot.xml`), as they handle the internal authentication exchange for you.
+*   **GitHub Copilot Auth Token:** Your GitHub authorization token.
+    *   **Requirements:** You need a GitHub User token and an active GitHub Copilot subscription. The token needs at least the `read:user` scope.
+    *   **How to get it:** Try create a PAT in your user account and only assign the `read:user` scope.
 
 ### Claude Code Usage
 
