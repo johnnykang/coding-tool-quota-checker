@@ -1,7 +1,7 @@
 import streamDeck, { LogLevel, Action, KeyAction } from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generatePercentageSvg, generateCountSvg } from "./svg";
 
-streamDeck.logger.setLevel(LogLevel.TRACE);
+streamDeck.logger.setLevel(LogLevel.INFO);
 
 // Keep track of action instances to handle intervals
 const actionInstances = new Map<string, NodeJS.Timeout>();
@@ -137,7 +137,6 @@ async function checkClaudeUsage(action: KeyAction<ClaudeSettings>) {
         }
 
         const data: ClaudeUsageResponse = await response.json();
-        streamDeck.logger.info("Claude API response: " + JSON.stringify(data));
 
         // Select the period data based on settings, with sensible fallbacks.
         type PeriodKey = keyof Pick<ClaudeUsageResponse,
@@ -154,7 +153,7 @@ async function checkClaudeUsage(action: KeyAction<ClaudeSettings>) {
         const periodData = keys.map(k => data[k]).find(p => p != null) ?? null;
 
         if (periodData === null || periodData === undefined) {
-            streamDeck.logger.warn("Claude API: no data for selected period.", JSON.stringify(data));
+            streamDeck.logger.warn("Claude API: no data for selected period.");
             await action.setImage(generateMessageSvg("No", "Data"));
             return;
         }
