@@ -1,10 +1,38 @@
 import streamDeck, { LogLevel, Action, KeyAction } from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generatePercentageSvg, generateCountSvg, generateCreditSvg } from "./svg";
+import { exec } from "child_process";
+import { promisify } from "util";
+import * as https from "https";
+
+const execAsync = promisify(exec);
 
 streamDeck.logger.setLevel(LogLevel.INFO);
 
 // Keep track of action instances to handle intervals
 const actionInstances = new Map<string, NodeJS.Timeout>();
+
+// Keep track of latest display values for PI
+const latestDisplayValues = new Map<string, string>();
+
+function updatePiDisplay(action: KeyAction<any>, displayValue: string) {
+    latestDisplayValues.set(action.id, displayValue);
+    if (streamDeck.ui.current?.action.id === action.id) {
+        streamDeck.ui.current.sendToPropertyInspector({
+            type: "updateDisplay",
+            value: displayValue
+        });
+    }
+}
+
+streamDeck.ui.onDidAppear((ev) => {
+    const val = latestDisplayValues.get(ev.action.id);
+    if (val && streamDeck.ui.current?.action.id === ev.action.id) {
+        streamDeck.ui.current.sendToPropertyInspector({
+            type: "updateDisplay",
+            value: val
+        });
+    }
+});
 
 // ─── Copilot Quota Action ────────────────────────────────────────────────────
 
@@ -45,6 +73,7 @@ async function checkCopilotQuota(action: KeyAction<CopilotSettings>) {
 
         if (remaining !== undefined) {
             await action.setImage(generateCountSvg(remaining, limit, "LEFT"));
+            updatePiDisplay(action, `${remaining} / ${limit}`);
         } else {
             await action.setImage(generateMessageSvg("Err", "Data"));
         }
@@ -170,6 +199,7 @@ async function checkClaudeUsage(action: KeyAction<ClaudeSettings>) {
         const label = labelMap[usagePeriod] ?? usagePeriod.toUpperCase();
 
         await action.setImage(generatePercentageSvg(pct, label));
+        updatePiDisplay(action, `${pct}% / 100%`);
 
     } catch (e) {
         streamDeck.logger.error("Failed to fetch Claude usage: " + e);
@@ -232,10 +262,209 @@ async function checkClaudeCredits(action: KeyAction<ClaudeCreditsSettings>) {
         const data: ClaudeCreditsResponse = await response.json();
 
         await action.setImage(generateCreditSvg(data.amount, data.currency, "CREDITS"));
+        const dollars = (data.amount / 100).toFixed(2);
+        const prefix = data.currency === "USD" ? "$" : data.currency + " ";
+        updatePiDisplay(action, `${prefix}${dollars}`);
 
     } catch (e) {
         streamDeck.logger.error("Failed to fetch Claude credits: " + e);
         await action.setImage(generateMessageSvg("Err", "Net"));
+    }
+}
+
+// ─── Antigravity Quota Action ───────────────────────────────────────────────────
+
+type AntigravitySettings = {
+    modelLabel?: string;
+};
+
+async function testPortConnectivity(port: number, csrfToken: string): Promise<boolean> {
+    return new Promise((resolve) => {
+        const body = JSON.stringify({
+            context: { properties: { ide: "antigravity", ideVersion: "1.0.0" } }
+        });
+        const req = https.request({
+            hostname: '127.0.0.1',
+            port: port,
+            path: '/exa.language_server_pb.LanguageServerService/GetUnleashData',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(body),
+                'Connect-Protocol-Version': '1',
+                'X-Codeium-Csrf-Token': csrfToken
+            },
+            rejectUnauthorized: false,
+            timeout: 2000
+        }, (res) => {
+            res.resume();
+            resolve(res.statusCode === 200);
+        });
+        req.on('error', () => resolve(false));
+        req.on('timeout', () => { req.destroy(); resolve(false); });
+        req.write(body);
+        req.end();
+    });
+}
+
+async function fetchUserStatus(port: number, csrfToken: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+        const body = JSON.stringify({
+            metadata: { ideName: "antigravity", extensionName: "antigravity", ideVersion: "1.0.0", locale: "en" }
+        });
+        const req = https.request({
+            hostname: '127.0.0.1',
+            port: port,
+            path: '/exa.language_server_pb.LanguageServerService/GetUserStatus',
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(body),
+                'Connect-Protocol-Version': '1',
+                'X-Codeium-Csrf-Token': csrfToken
+            },
+            rejectUnauthorized: false,
+            timeout: 5000
+        }, (res) => {
+            let data = '';
+            res.on('data', chunk => data += chunk);
+            res.on('end', () => {
+                if (res.statusCode !== 200) {
+                    reject(new Error(`HTTP ${res.statusCode}`));
+                    return;
+                }
+                try {
+                    resolve(JSON.parse(data));
+                } catch(e) {
+                    reject(e);
+                }
+            });
+        });
+        req.on('error', reject);
+        req.on('timeout', () => { req.destroy(); reject(new Error("timeout")); });
+        req.write(body);
+        req.end();
+    });
+}
+
+async function checkAntigravityQuota(action: KeyAction<AntigravitySettings>) {
+    const settings = await action.getSettings();
+    const modelLabel = settings.modelLabel?.toLowerCase().trim();
+
+    try {
+        await action.setImage(generateLoadingSvg());
+        await action.setTitle("");
+
+        if (process.platform !== "win32") {
+            await action.setImage(generateMessageSvg("Win", "Only"));
+            return;
+        }
+
+        const cmd = `powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \\"name='language_server_windows_x64.exe'\\" | Select-Object ProcessId,CommandLine | ConvertTo-Json"`;
+        const { stdout } = await execAsync(cmd, { timeout: 10000 });
+        
+        if (!stdout || stdout.trim() === "") {
+            await action.setImage(generateMessageSvg("No", "Proc"));
+            return;
+        }
+
+        let processData;
+        try {
+            processData = JSON.parse(stdout.trim());
+        } catch (e) {
+            await action.setImage(generateMessageSvg("Err", "JSON"));
+            return;
+        }
+
+        let agProcess = null;
+        if (Array.isArray(processData)) {
+            agProcess = processData.find((p: any) => p.CommandLine && (p.CommandLine.includes("antigravity") || p.CommandLine.includes("--app_data_dir")));
+        } else {
+            if (processData.CommandLine && (processData.CommandLine.includes("antigravity") || processData.CommandLine.includes("--app_data_dir"))) {
+                agProcess = processData;
+            }
+        }
+
+        if (!agProcess) {
+            await action.setImage(generateMessageSvg("No", "AG"));
+            return;
+        }
+
+        const pid = agProcess.ProcessId;
+        const cmdLine = agProcess.CommandLine;
+        const tokenMatch = cmdLine.match(/--csrf_token[=\s]+([a-f0-9-]+)/i);
+        if (!tokenMatch) {
+            await action.setImage(generateMessageSvg("No", "Token"));
+            return;
+        }
+        const csrfToken = tokenMatch[1];
+
+        const netstatCmd = `netstat -ano | findstr "${pid}" | findstr "LISTENING"`;
+        const { stdout: netstatOut } = await execAsync(netstatCmd, { timeout: 5000 });
+        
+        const portRegex = /(?:127\.0\.0\.1|0\.0\.0\.0|\[::1?]):(\d+)\s+\S+\s+LISTENING/gi;
+        const ports: number[] = [];
+        let match;
+        while ((match = portRegex.exec(netstatOut)) !== null) {
+            const port = parseInt(match[1], 10);
+            if (!ports.includes(port)) ports.push(port);
+        }
+
+        if (ports.length === 0) {
+            await action.setImage(generateMessageSvg("No", "Ports"));
+            return;
+        }
+
+        let workingPort: number | null = null;
+        for (const port of ports) {
+            const isWorking = await testPortConnectivity(port, csrfToken);
+            if (isWorking) {
+                workingPort = port;
+                break;
+            }
+        }
+
+        if (!workingPort) {
+            await action.setImage(generateMessageSvg("No", "API"));
+            return;
+        }
+
+        const response = await fetchUserStatus(workingPort, csrfToken);
+        const modelConfigs = response?.userStatus?.cascadeModelConfigData?.clientModelConfigs || [];
+        
+        const availableModels = modelConfigs.map((c: any) => ({
+            label: c.label,
+            modelId: c.modelOrAlias?.model
+        }));
+        streamDeck.logger.info(`Available Antigravity models: ${JSON.stringify(availableModels)}`);
+        
+        let targetModel = null;
+        if (modelLabel) {
+            targetModel = modelConfigs.find((c: any) => c.label && c.label.toLowerCase().includes(modelLabel) && c.quotaInfo);
+        }
+        
+        if (!targetModel) {
+            targetModel = modelConfigs.find((c: any) => c.quotaInfo);
+        }
+
+        if (!targetModel || !targetModel.quotaInfo) {
+            await action.setImage(generateMessageSvg("No", "Quota"));
+            return;
+        }
+
+        const remainingFraction = targetModel.quotaInfo.remainingFraction;
+        const remainingPercentage = remainingFraction !== undefined ? Math.round(remainingFraction * 100) : 0;
+        
+        const labelStr = targetModel.label || "MODL";
+        // Extract a 4 letter acronym or first 4 chars
+        const shortLabel = labelStr.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase();
+        
+        await action.setImage(generatePercentageSvg(remainingPercentage, shortLabel));
+        updatePiDisplay(action, `${remainingPercentage}% / 100%`);
+
+    } catch (e) {
+        streamDeck.logger.error("Failed to check Antigravity Quota: " + e);
+        await action.setImage(generateMessageSvg("Err", "Sys"));
     }
 }
 
@@ -244,8 +473,9 @@ async function checkClaudeCredits(action: KeyAction<ClaudeCreditsSettings>) {
 const COPILOT_ACTION_UUID = "au.jkang.codingtoolquotachecker.action";
 const CLAUDE_ACTION_UUID  = "au.jkang.codingtoolquotachecker.claude";
 const CLAUDE_CREDITS_ACTION_UUID = "au.jkang.codingtoolquotachecker.claudecredits";
+const ANTIGRAVITY_ACTION_UUID = "au.jkang.codingtoolquotachecker.antigravity";
 
-streamDeck.actions.onWillAppear<CopilotSettings | ClaudeSettings | ClaudeCreditsSettings>((ev) => {
+streamDeck.actions.onWillAppear<CopilotSettings | ClaudeSettings | ClaudeCreditsSettings | AntigravitySettings>((ev) => {
     const action = ev.action as KeyAction<any>;
     const uuid = ev.action.manifestId;
 
@@ -254,6 +484,8 @@ streamDeck.actions.onWillAppear<CopilotSettings | ClaudeSettings | ClaudeCredits
         runner = () => checkClaudeUsage(action as KeyAction<ClaudeSettings>);
     } else if (uuid === CLAUDE_CREDITS_ACTION_UUID) {
         runner = () => checkClaudeCredits(action as KeyAction<ClaudeCreditsSettings>);
+    } else if (uuid === ANTIGRAVITY_ACTION_UUID) {
+        runner = () => checkAntigravityQuota(action as KeyAction<AntigravitySettings>);
     } else {
         runner = () => checkCopilotQuota(action as KeyAction<CopilotSettings>);
     }
@@ -268,7 +500,7 @@ streamDeck.actions.onWillAppear<CopilotSettings | ClaudeSettings | ClaudeCredits
     actionInstances.set(action.id, intervalId);
 });
 
-streamDeck.actions.onWillDisappear<CopilotSettings | ClaudeSettings | ClaudeCreditsSettings>((ev) => {
+streamDeck.actions.onWillDisappear<CopilotSettings | ClaudeSettings | ClaudeCreditsSettings | AntigravitySettings>((ev) => {
     const action = ev.action as KeyAction<any>;
     if (actionInstances.has(action.id)) {
         clearInterval(actionInstances.get(action.id)!);
@@ -276,7 +508,7 @@ streamDeck.actions.onWillDisappear<CopilotSettings | ClaudeSettings | ClaudeCred
     }
 });
 
-streamDeck.actions.onKeyDown<CopilotSettings | ClaudeSettings | ClaudeCreditsSettings>((ev) => {
+streamDeck.actions.onKeyDown<CopilotSettings | ClaudeSettings | ClaudeCreditsSettings | AntigravitySettings>((ev) => {
     const action = ev.action as KeyAction<any>;
     const uuid = ev.action.manifestId;
 
@@ -284,6 +516,8 @@ streamDeck.actions.onKeyDown<CopilotSettings | ClaudeSettings | ClaudeCreditsSet
         checkClaudeUsage(action as KeyAction<ClaudeSettings>);
     } else if (uuid === CLAUDE_CREDITS_ACTION_UUID) {
         checkClaudeCredits(action as KeyAction<ClaudeCreditsSettings>);
+    } else if (uuid === ANTIGRAVITY_ACTION_UUID) {
+        checkAntigravityQuota(action as KeyAction<AntigravitySettings>);
     } else {
         checkCopilotQuota(action as KeyAction<CopilotSettings>);
     }

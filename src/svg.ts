@@ -40,26 +40,26 @@ export function generateMessageSvg(title: string, subtitle?: string, color: stri
     `);
 }
 
-export function generatePercentageSvg(usagePercentage: number, label: string): string {
+export function generatePercentageSvg(pct: number, label: string): string {
     const r = 48;
     const c = 2 * Math.PI * r;
-    // 0% usage -> 100% filled, 100% usage -> 0% filled
-    const remainingPercentage = Math.max(0, 100 - usagePercentage);
-    const dash = (remainingPercentage / 100) * c;
+    // Ring arc fills proportionally to pct — same value shown in the text label
+    const clampedPct = Math.max(0, Math.min(100, pct));
+    const dash = (clampedPct / 100) * c;
     const gap = c;
-    
+
     let color = "#10b981"; // Emerald (Good)
-    if (usagePercentage >= 90) color = "#ef4444"; // Red (Critical)
-    else if (usagePercentage >= 70) color = "#f59e0b"; // Amber (Warning)
-    
+    if (clampedPct >= 90) color = "#ef4444"; // Red (Critical)
+    else if (clampedPct >= 70) color = "#f59e0b"; // Amber (Warning)
+
     return encodeSvg(`
         <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
             <rect width="144" height="144" fill="#0a0a0a" />
             <circle cx="72" cy="72" r="${r}" fill="none" stroke="#222" stroke-width="10" />
-            ${remainingPercentage > 0 ? `<circle cx="72" cy="72" r="${r}" fill="none" stroke="${color}" stroke-width="10" 
-                stroke-dasharray="${dash} ${gap}" stroke-dashoffset="0" stroke-linecap="round" 
+            ${clampedPct > 0 ? `<circle cx="72" cy="72" r="${r}" fill="none" stroke="${color}" stroke-width="10"
+                stroke-dasharray="${dash} ${gap}" stroke-dashoffset="0" stroke-linecap="round"
                 transform="rotate(-90 72 72)" />` : ""}
-            <text x="72" y="84" font-family="sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">${usagePercentage}%</text>
+            <text x="72" y="84" font-family="sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">${pct}%</text>
             <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
             <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="2">CLAUDE</text>
         </svg>

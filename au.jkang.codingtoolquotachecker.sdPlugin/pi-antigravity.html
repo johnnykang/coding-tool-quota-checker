@@ -3,20 +3,17 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Claude Code Credits Settings</title>
+    <title>Antigravity Quota Settings</title>
     <style>
         body { font-family: sans-serif; font-size: 10pt; color: white; background-color: transparent; }
         .wrap { padding: 10px; box-sizing: border-box; }
         .row { margin-bottom: 8px; }
         label { display: block; margin-bottom: 2px; color: #ccc; }
-        input[type="password"],
-        input[type="text"],
-        select { width: 100%; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; padding: 3px 5px; border-radius: 3px; }
-        #saveButton { margin-top: 10px; width: 100%; padding: 5px; cursor: pointer; background: #CC785C; border: none; color: white; border-radius: 3px; }
-        #saveButton:hover { background: #B5673D; }
+        input[type="text"] { width: 100%; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; padding: 3px 5px; border-radius: 3px; }
+        #saveButton { margin-top: 10px; width: 100%; padding: 5px; cursor: pointer; background: #5C8ACC; border: none; color: white; border-radius: 3px; }
+        #saveButton:hover { background: #3D6BB5; }
         #status { font-size: 9pt; color: #88cc88; height: 1.2em; }
         .hint { font-size: 8pt; color: #888; margin-top: 2px; }
-        a { color: #CC785C; }
     </style>
 </head>
 
@@ -26,19 +23,15 @@
             <div id="displayValue" style="background: #222; padding: 8px; border-radius: 3px; border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; margin-bottom: 10px;">Waiting for data...</div>
         </div>
         <div class="row">
-            <label for="apiKey">Console API Key:</label>
-            <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
-            <p class="hint">Your API key from platform.claude.com.</p>
-        </div>
-        <div class="row">
-            <label for="organizationId">Organisation ID:</label>
-            <input type="text" id="organizationId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
-            <p class="hint">From <a href="https://console.anthropic.com/settings/organization" target="_blank">console.anthropic.com</a> → Organisation ID.</p>
+            <label for="modelLabel">Model Label (Optional):</label>
+            <input type="text" id="modelLabel" placeholder="e.g. Gemini 1.5 Pro" />
+            <p class="hint">Leave blank to use the first available model quota.</p>
         </div>
         <div class="row">
             <button id="saveButton">Save Settings</button>
         </div>
         <p id="status"></p>
+        <p class="hint">This action automatically detects the local Antigravity Language Server running in VSCode.</p>
     </div>
 
     <script>
@@ -68,8 +61,7 @@
                 const jsonObj = JSON.parse(evt.data);
                 if (jsonObj.event === 'didReceiveSettings') {
                     const s = jsonObj.payload.settings;
-                    if (s.apiKey)         document.getElementById('apiKey').value = s.apiKey;
-                    if (s.organizationId) document.getElementById('organizationId').value = s.organizationId;
+                    if (s.modelLabel) document.getElementById('modelLabel').value = s.modelLabel;
                 } else if (jsonObj.event === 'sendToPropertyInspector') {
                     if (jsonObj.payload && jsonObj.payload.type === 'updateDisplay') {
                         document.getElementById('displayValue').innerText = jsonObj.payload.value;
@@ -79,8 +71,7 @@
 
             document.getElementById('saveButton').addEventListener('click', function () {
                 const payload = {
-                    apiKey:         document.getElementById('apiKey').value,
-                    organizationId: document.getElementById('organizationId').value
+                    modelLabel: document.getElementById('modelLabel').value
                 };
                 websocket.send(JSON.stringify({
                     "event": "setSettings",

@@ -17,6 +17,9 @@
 <body>
     <div class="wrap">
         <div class="row">
+            <div id="displayValue" style="background: #222; padding: 8px; border-radius: 3px; border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; margin-bottom: 10px;">Waiting for data...</div>
+        </div>
+        <div class="row">
             <label for="authToken">GitHub Copilot Auth Token:</label>
             <input type="password" id="authToken" placeholder="ghu_..." />
         </div>
@@ -57,6 +60,10 @@
                     const settings = jsonObj.payload.settings;
                     if (settings.authToken) {
                         document.getElementById('authToken').value = settings.authToken;
+                    }
+                } else if (jsonObj.event === 'sendToPropertyInspector') {
+                    if (jsonObj.payload && jsonObj.payload.type === 'updateDisplay') {
+                        document.getElementById('displayValue').innerText = jsonObj.payload.value;
                     }
                 }
             };
