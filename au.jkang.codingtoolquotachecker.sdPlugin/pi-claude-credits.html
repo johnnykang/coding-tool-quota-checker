@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Claude Code Credits Settings</title>
+    <style>
+        body { font-family: sans-serif; font-size: 10pt; color: white; background-color: transparent; }
+        .wrap { padding: 10px; box-sizing: border-box; }
+        .row { margin-bottom: 8px; }
+        label { display: block; margin-bottom: 2px; color: #ccc; }
+        input[type="password"],
+        input[type="text"],
+        select { width: 100%; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; padding: 3px 5px; border-radius: 3px; }
+        #saveButton { margin-top: 10px; width: 100%; padding: 5px; cursor: pointer; background: #CC785C; border: none; color: white; border-radius: 3px; }
+        #saveButton:hover { background: #B5673D; }
+        #status { font-size: 9pt; color: #88cc88; height: 1.2em; }
+        .hint { font-size: 8pt; color: #888; margin-top: 2px; }
+        a { color: #CC785C; }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="row">
+            <label for="apiKey">Console API Key:</label>
+            <input type="password" id="apiKey" placeholder="sk-ant-api03-..." />
+            <p class="hint">Your API key from platform.claude.com.</p>
+        </div>
+        <div class="row">
+            <label for="organizationId">Organisation ID:</label>
+            <input type="text" id="organizationId" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" />
+            <p class="hint">From <a href="https://console.anthropic.com/settings/organization" target="_blank">console.anthropic.com</a> → Organisation ID.</p>
+        </div>
+        <div class="row">
+            <button id="saveButton">Save Settings</button>
+        </div>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        let websocket = null;
+        let pluginUUID = null;
+        let actionInfo = {};
+
+        function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, inInfo, inActionInfo) {
+            pluginUUID = inPluginUUID;
+            actionInfo = JSON.parse(inActionInfo);
+
+            websocket = new WebSocket('ws://127.0.0.1:' + inPort);
+
+            websocket.onopen = function () {
+                websocket.send(JSON.stringify({
+                    "event": inRegisterEvent,
+                    "uuid": pluginUUID
+                }));
+
+                websocket.send(JSON.stringify({
+                    "event": "getSettings",
+                    "context": pluginUUID
+                }));
+            };
+
+            websocket.onmessage = function (evt) {
+                const jsonObj = JSON.parse(evt.data);
+                if (jsonObj.event === 'didReceiveSettings') {
+                    const s = jsonObj.payload.settings;
+                    if (s.apiKey)         document.getElementById('apiKey').value = s.apiKey;
+                    if (s.organizationId) document.getElementById('organizationId').value = s.organizationId;
+                }
+            };
+
+            document.getElementById('saveButton').addEventListener('click', function () {
+                const payload = {
+                    apiKey:         document.getElementById('apiKey').value,
+                    organizationId: document.getElementById('organizationId').value
+                };
+                websocket.send(JSON.stringify({
+                    "event": "setSettings",
+                    "context": pluginUUID,
+                    "payload": payload
+                }));
+                const status = document.getElementById('status');
+                status.innerText = "Saved!";
+                setTimeout(() => status.innerText = "", 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

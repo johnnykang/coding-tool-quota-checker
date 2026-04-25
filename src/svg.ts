@@ -90,3 +90,22 @@ export function generateCountSvg(count: number, limit: number, label: string = "
         </svg>
     `);
 }
+
+export function generateCreditSvg(amountInCents: number, currency: string, label: string = "CREDITS"): string {
+    const dollars = (amountInCents / 100).toFixed(2);
+    const prefix = currency === "USD" ? "$" : currency + " ";
+    
+    let color = "#10b981"; // Emerald (Good)
+    if (amountInCents <= 500) color = "#ef4444"; // Red (Critical) < $5
+    else if (amountInCents <= 1000) color = "#f59e0b"; // Amber (Warning) < $10
+    
+    return encodeSvg(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
+            <rect width="144" height="144" fill="#0a0a0a" />
+            <circle cx="72" cy="72" r="48" fill="none" stroke="${color}" stroke-width="10" />
+            <text x="72" y="86" font-family="sans-serif" font-size="32" font-weight="bold" fill="#fff" text-anchor="middle">${prefix}${dollars}</text>
+            <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
+            <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">CLAUDE</text>
+        </svg>
+    `);
+}

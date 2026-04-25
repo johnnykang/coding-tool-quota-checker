@@ -1,5 +1,5 @@
 import streamDeck, { LogLevel, Action, KeyAction } from "@elgato/streamdeck";
-import { generateLoadingSvg, generateMessageSvg, generatePercentageSvg, generateCountSvg } from "./svg";
+import { generateLoadingSvg, generateMessageSvg, generatePercentageSvg, generateCountSvg, generateCreditSvg } from "./svg";
 
 streamDeck.logger.setLevel(LogLevel.INFO);
 
@@ -177,18 +177,86 @@ async function checkClaudeUsage(action: KeyAction<ClaudeSettings>) {
     }
 }
 
+// ─── Claude Code Credits Action ─────────────────────────────────────────────────
+
+type ClaudeCreditsSettings = {
+    apiKey?: string;
+    organizationId?: string;
+};
+
+type ClaudeCreditsResponse = {
+    amount: number;
+    currency: string;
+    auto_reload_settings: any;
+    pending_invoice_amount_cents: any;
+};
+
+async function checkClaudeCredits(action: KeyAction<ClaudeCreditsSettings>) {
+    const settings = await action.getSettings();
+    const { apiKey, organizationId } = settings;
+
+    if (!apiKey || !organizationId) {
+        await action.setImage(generateMessageSvg("No", "Creds"));
+        await action.setTitle("");
+        return;
+    }
+
+    try {
+        await action.setImage(generateLoadingSvg());
+        await action.setTitle("");
+
+        const token = apiKey.trim();
+        const orgId = organizationId.trim();
+        const url = `https://platform.claude.com/api/organizations/${orgId}/prepaid/credits`;
+
+        const response = await fetch(url, {
+            method: "GET",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36"
+            }
+        });
+
+        if (response.status === 403 || response.status === 401) {
+            streamDeck.logger.warn("Claude API: 401/403 – API key may be invalid.");
+            await action.setImage(generateMessageSvg(response.status.toString(), "Auth?"));
+            return;
+        }
+
+        if (!response.ok) {
+            streamDeck.logger.error(`Claude API Error: ${response.status} ${response.statusText}`);
+            await action.setImage(generateMessageSvg("Err", response.status.toString()));
+            return;
+        }
+
+        const data: ClaudeCreditsResponse = await response.json();
+
+        await action.setImage(generateCreditSvg(data.amount, data.currency, "CREDITS"));
+
+    } catch (e) {
+        streamDeck.logger.error("Failed to fetch Claude credits: " + e);
+        await action.setImage(generateMessageSvg("Err", "Net"));
+    }
+}
+
 // ─── Action Lifecycle ─────────────────────────────────────────────────────────
 
 const COPILOT_ACTION_UUID = "au.jkang.codingtoolquotachecker.action";
 const CLAUDE_ACTION_UUID  = "au.jkang.codingtoolquotachecker.claude";
+const CLAUDE_CREDITS_ACTION_UUID = "au.jkang.codingtoolquotachecker.claudecredits";
 
-streamDeck.actions.onWillAppear<CopilotSettings | ClaudeSettings>((ev) => {
+streamDeck.actions.onWillAppear<CopilotSettings | ClaudeSettings | ClaudeCreditsSettings>((ev) => {
     const action = ev.action as KeyAction<any>;
     const uuid = ev.action.manifestId;
 
-    const runner = uuid === CLAUDE_ACTION_UUID
-        ? () => checkClaudeUsage(action as KeyAction<ClaudeSettings>)
-        : () => checkCopilotQuota(action as KeyAction<CopilotSettings>);
+    let runner: () => Promise<void>;
+    if (uuid === CLAUDE_ACTION_UUID) {
+        runner = () => checkClaudeUsage(action as KeyAction<ClaudeSettings>);
+    } else if (uuid === CLAUDE_CREDITS_ACTION_UUID) {
+        runner = () => checkClaudeCredits(action as KeyAction<ClaudeCreditsSettings>);
+    } else {
+        runner = () => checkCopilotQuota(action as KeyAction<CopilotSettings>);
+    }
 
     runner();
 
@@ -200,7 +268,7 @@ streamDeck.actions.onWillAppear<CopilotSettings | ClaudeSettings>((ev) => {
     actionInstances.set(action.id, intervalId);
 });
 
-streamDeck.actions.onWillDisappear<CopilotSettings | ClaudeSettings>((ev) => {
+streamDeck.actions.onWillDisappear<CopilotSettings | ClaudeSettings | ClaudeCreditsSettings>((ev) => {
     const action = ev.action as KeyAction<any>;
     if (actionInstances.has(action.id)) {
         clearInterval(actionInstances.get(action.id)!);
@@ -208,12 +276,14 @@ streamDeck.actions.onWillDisappear<CopilotSettings | ClaudeSettings>((ev) => {
     }
 });
 
-streamDeck.actions.onKeyDown<CopilotSettings | ClaudeSettings>((ev) => {
+streamDeck.actions.onKeyDown<CopilotSettings | ClaudeSettings | ClaudeCreditsSettings>((ev) => {
     const action = ev.action as KeyAction<any>;
     const uuid = ev.action.manifestId;
 
     if (uuid === CLAUDE_ACTION_UUID) {
         checkClaudeUsage(action as KeyAction<ClaudeSettings>);
+    } else if (uuid === CLAUDE_CREDITS_ACTION_UUID) {
+        checkClaudeCredits(action as KeyAction<ClaudeCreditsSettings>);
     } else {
         checkCopilotQuota(action as KeyAction<CopilotSettings>);
     }
