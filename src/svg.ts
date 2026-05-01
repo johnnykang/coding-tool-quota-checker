@@ -91,7 +91,7 @@ export function generateCountSvg(count: number, limit: number, label: string = "
     `);
 }
 
-export function generateCreditSvg(amountInCents: number, currency: string, label: string = "CREDITS"): string {
+export function generateCreditSvg(amountInCents: number, currency: string, label: string = "CREDITS", topLabel: string = "CLAUDE"): string {
     const dollars = (amountInCents / 100).toFixed(2);
     const prefix = currency === "USD" ? "$" : currency + " ";
     
@@ -105,7 +105,7 @@ export function generateCreditSvg(amountInCents: number, currency: string, label
             <circle cx="72" cy="72" r="48" fill="none" stroke="${color}" stroke-width="10" />
             <text x="72" y="86" font-family="sans-serif" font-size="32" font-weight="bold" fill="#fff" text-anchor="middle">${prefix}${dollars}</text>
             <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
-            <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">CLAUDE</text>
+            <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">${topLabel}</text>
         </svg>
     `);
 }

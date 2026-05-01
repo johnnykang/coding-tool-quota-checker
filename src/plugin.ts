@@ -5,6 +5,7 @@ import { CopilotProvider, CopilotSettings } from "./providers/copilot";
 import { ClaudeUsageProvider, ClaudeUsageSettings } from "./providers/claude-usage";
 import { ClaudeCreditsProvider, ClaudeCreditsSettings } from "./providers/claude-credits";
 import { AntigravityProvider, AntigravitySettings } from "./providers/antigravity";
+import { OpenAiCreditsProvider, OpenAiCreditsSettings } from "./providers/openai-credits";
 
 streamDeck.logger.setLevel(LogLevel.INFO);
 
@@ -14,6 +15,7 @@ const COPILOT_ACTION_UUID         = "au.jkang.codingtoolquotachecker.action";
 const CLAUDE_ACTION_UUID          = "au.jkang.codingtoolquotachecker.claude";
 const CLAUDE_CREDITS_ACTION_UUID  = "au.jkang.codingtoolquotachecker.claudecredits";
 const ANTIGRAVITY_ACTION_UUID     = "au.jkang.codingtoolquotachecker.antigravity";
+const OPENAI_CREDITS_ACTION_UUID  = "au.jkang.codingtoolquotachecker.openaicredits";
 
 // ─── PI display state ─────────────────────────────────────────────────────────
 
@@ -47,9 +49,10 @@ const providers = {
     [CLAUDE_ACTION_UUID]:         new ClaudeUsageProvider(updatePiDisplay),
     [CLAUDE_CREDITS_ACTION_UUID]: new ClaudeCreditsProvider(updatePiDisplay),
     [ANTIGRAVITY_ACTION_UUID]:    new AntigravityProvider(updatePiDisplay),
+    [OPENAI_CREDITS_ACTION_UUID]: new OpenAiCreditsProvider(updatePiDisplay),
 };
 
-type AllSettings = CopilotSettings | ClaudeUsageSettings | ClaudeCreditsSettings | AntigravitySettings;
+type AllSettings = CopilotSettings | ClaudeUsageSettings | ClaudeCreditsSettings | AntigravitySettings | OpenAiCreditsSettings;
 
 function getRunner(action: KeyAction<any>): (() => Promise<void>) | null {
     const provider = providers[action.manifestId as keyof typeof providers];

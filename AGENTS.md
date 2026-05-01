@@ -1,6 +1,6 @@
 # Agent Information
 
-This repository contains an Elgato Stream Deck plugin written in TypeScript. It provides actions to monitor GitHub Copilot and Anthropic Claude quotas.
+This repository contains an Elgato Stream Deck plugin written in TypeScript. It provides actions to monitor GitHub Copilot, Anthropic Claude, Antigravity, and OpenAI quotas and credit balances.
 
 ## Tech Stack
 
@@ -21,11 +21,14 @@ This repository contains an Elgato Stream Deck plugin written in TypeScript. It 
 *   `au.jkang.codingtoolquotachecker.sdPlugin/manifest.json`: The standard Stream Deck plugin manifest.
 *   `au.jkang.codingtoolquotachecker.sdPlugin/pi.html`: The Property Inspector for the **Copilot Quota** action. Handles saving the `authToken`.
 *   `au.jkang.codingtoolquotachecker.sdPlugin/pi-claude.html`: The Property Inspector for the **Claude Code Usage** action. Handles saving the `sessionKey`, `organizationId`, and `usagePeriod`.
+*   `au.jkang.codingtoolquotachecker.sdPlugin/pi-claude-credits.html`: The Property Inspector for the **Claude API Credits** action. Handles saving the `apiKey` and `organizationId`.
+*   `au.jkang.codingtoolquotachecker.sdPlugin/pi-antigravity.html`: The Property Inspector for the **Antigravity Quota** action. Handles saving the `modelLabel`.
+*   `au.jkang.codingtoolquotachecker.sdPlugin/pi-openai-credits.html`: The Property Inspector for the **OpenAI Credits** action. Handles saving the `sessionToken`.
 
 ## Important Notes for AI Agents
 
 *   The plugin dynamically generates SVG strings and sends them to the Stream Deck software via `action.setImage()`. Do not rely on static image assets for dynamic numbers.
-*   The `sessionKey` for Claude acts as a direct cookie bypass. Do not expose or log this key.
+*   The `sessionKey` (Claude) and `sessionToken` (OpenAI) act as direct cookie/session bypasses. Do not expose or log these values.
 *   Use Australian English spelling in all written output.
 
 <!-- code-review-graph MCP tools -->

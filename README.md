@@ -2,7 +2,7 @@
 
 ![Screenshot](images/screenshot.png)
 
-A Stream Deck plugin to monitor coding-tool quotas and credit balances directly from your Elgato Stream Deck. Supports GitHub Copilot, Anthropic Claude (usage and credits), and the Antigravity AI coding assistant.
+A Stream Deck plugin to monitor coding-tool quotas and credit balances directly from your Elgato Stream Deck. Supports GitHub Copilot, Anthropic Claude (usage and credits), Antigravity AI, and OpenAI.
 
 ## Features
 
@@ -10,6 +10,7 @@ A Stream Deck plugin to monitor coding-tool quotas and credit balances directly 
 *   **Claude Code Usage:** Displays your Claude Code or claude.ai usage percentage based on different time windows and models.
 *   **Claude API Credits:** Displays your remaining prepaid credit balance from the Anthropic API platform.
 *   **Antigravity Quota:** Displays the remaining quota percentage for a model in the locally-running Antigravity language server (Windows only).
+*   **OpenAI Credits:** Displays your remaining OpenAI credit balance using the undocumented billing endpoint.
 
 ## Installation
 
@@ -79,3 +80,15 @@ The plugin logs all available models at `INFO` level on each poll. The following
 To target one of these, enter any unique substring of the label in the **Model Label** field (e.g. `opus`, `gemini 3 flash`, `120b`). Model availability varies by account and will change as Antigravity updates its offering.
 
 > **Note:** The Antigravity language server (`language_server_windows_x64.exe`) must be running for this action to return data. If the process is not found the button will show `No Proc`.
+
+### OpenAI Credits
+
+Displays your remaining OpenAI credit balance using the undocumented `credit_grants` billing endpoint.
+
+> **Warning:** This endpoint is not officially supported and requires a **browser session token**, not a standard `sk-...` API key. The token expires after a few days and may break without notice if OpenAI changes the endpoint.
+
+*   **Session Token:** A `sess-...` bearer token copied from an authenticated [platform.openai.com](https://platform.openai.com) browser session.
+    *   Open DevTools → Application → Cookies on `platform.openai.com`.
+    *   Copy the value of the `__Secure-next-auth.session-token` or equivalent session cookie, or capture the `Authorization` header from a network request.
+
+The button displays the `total_available` balance as a dollar amount (e.g. `$23.85`).

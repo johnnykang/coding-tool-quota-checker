@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>OpenAI Credits Settings</title>
+    <style>
+        body { font-family: sans-serif; font-size: 10pt; color: white; background-color: transparent; }
+        .wrap { padding: 10px; box-sizing: border-box; }
+        .row { margin-bottom: 8px; }
+        label { display: block; margin-bottom: 2px; color: #ccc; }
+        input[type="password"],
+        input[type="text"] { width: 100%; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; padding: 3px 5px; border-radius: 3px; }
+        #saveButton { margin-top: 10px; width: 100%; padding: 5px; cursor: pointer; background: #10a37f; border: none; color: white; border-radius: 3px; }
+        #saveButton:hover { background: #0d8c6d; }
+        #status { font-size: 9pt; color: #88cc88; height: 1.2em; }
+        .hint { font-size: 8pt; color: #888; margin-top: 2px; }
+        a { color: #10a37f; }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="row">
+            <div id="displayValue" style="background: #222; padding: 8px; border-radius: 3px; border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; margin-bottom: 10px;">Waiting for data...</div>
+        </div>
+        <div class="row">
+            <label for="sessionToken">Session Token:</label>
+            <input type="password" id="sessionToken" placeholder="sess-..." />
+            <p class="hint">Copy a <code>sess-…</code> bearer token from an authenticated <a href="https://platform.openai.com" target="_blank">platform.openai.com</a> browser session. Expires after a few days.</p>
+        </div>
+        <div class="row">
+            <button id="saveButton">Save Settings</button>
+        </div>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        let websocket = null;
+        let pluginUUID = null;
+        let actionInfo = {};
+
+        function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, inInfo, inActionInfo) {
+            pluginUUID = inPluginUUID;
+            actionInfo = JSON.parse(inActionInfo);
+
+            websocket = new WebSocket('ws://127.0.0.1:' + inPort);
+
+            websocket.onopen = function () {
+                websocket.send(JSON.stringify({
+                    "event": inRegisterEvent,
+                    "uuid": pluginUUID
+                }));
+
+                websocket.send(JSON.stringify({
+                    "event": "getSettings",
+                    "context": pluginUUID
+                }));
+            };
+
+            websocket.onmessage = function (evt) {
+                const jsonObj = JSON.parse(evt.data);
+                if (jsonObj.event === 'didReceiveSettings') {
+                    const s = jsonObj.payload.settings;
+                    if (s.sessionToken) document.getElementById('sessionToken').value = s.sessionToken;
+                } else if (jsonObj.event === 'sendToPropertyInspector') {
+                    if (jsonObj.payload && jsonObj.payload.type === 'updateDisplay') {
+                        document.getElementById('displayValue').innerText = jsonObj.payload.value;
+                    }
+                }
+            };
+
+            document.getElementById('saveButton').addEventListener('click', function () {
+                const payload = {
+                    sessionToken: document.getElementById('sessionToken').value
+                };
+                websocket.send(JSON.stringify({
+                    "event": "setSettings",
+                    "context": pluginUUID,
+                    "payload": payload
+                }));
+                const status = document.getElementById('status');
+                status.innerText = "Saved!";
+                setTimeout(() => status.innerText = "", 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

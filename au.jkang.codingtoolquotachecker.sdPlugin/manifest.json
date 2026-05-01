@@ -64,6 +64,20 @@
                 }
             ],
             "Controllers": ["Keypad"]
+        },
+        {
+            "Name": "OpenAI Credits",
+            "UUID": "au.jkang.codingtoolquotachecker.openaicredits",
+            "Icon": "imgs/icon",
+            "Tooltip": "Displays remaining OpenAI credit balance",
+            "PropertyInspectorPath": "pi-openai-credits.html",
+            "States": [
+                {
+                    "Image": "imgs/icon",
+                    "TitleAlignment": "middle"
+                }
+            ],
+            "Controllers": ["Keypad"]
         }
     ],
     "CodePath": "bin/plugin.js",
