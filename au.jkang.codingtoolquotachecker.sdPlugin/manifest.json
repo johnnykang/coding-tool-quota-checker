@@ -104,6 +104,22 @@
             "Controllers": [
                 "Keypad"
             ]
+        },
+        {
+            "Name": "FAL.AI Balance",
+            "UUID": "au.jkang.codingtoolquotachecker.fal",
+            "Icon": "imgs/icon",
+            "Tooltip": "Displays remaining FAL.AI credit balance",
+            "PropertyInspectorPath": "pi-fal-credits.html",
+            "States": [
+                {
+                    "Image": "imgs/icon",
+                    "TitleAlignment": "middle"
+                }
+            ],
+            "Controllers": [
+                "Keypad"
+            ]
         }
     ],
     "CodePath": "bin/plugin.js",

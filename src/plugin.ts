@@ -7,6 +7,7 @@ import { ClaudeCreditsProvider, ClaudeCreditsSettings } from "./providers/claude
 import { AntigravityProvider, AntigravitySettings } from "./providers/antigravity";
 import { OpenAiCreditsProvider, OpenAiCreditsSettings } from "./providers/openai-credits";
 import { DeepSeekProvider, DeepSeekSettings } from "./providers/deepseek";
+import { FalCreditsProvider, FalCreditsSettings } from "./providers/fal-credits";
 
 streamDeck.logger.setLevel(LogLevel.INFO);
 
@@ -18,6 +19,7 @@ const CLAUDE_CREDITS_ACTION_UUID  = "au.jkang.codingtoolquotachecker.claudecredi
 const ANTIGRAVITY_ACTION_UUID     = "au.jkang.codingtoolquotachecker.antigravity";
 const OPENAI_CREDITS_ACTION_UUID  = "au.jkang.codingtoolquotachecker.openaicredits";
 const DEEPSEEK_ACTION_UUID        = "au.jkang.codingtoolquotachecker.deepseek";
+const FAL_ACTION_UUID             = "au.jkang.codingtoolquotachecker.fal";
 
 // ─── PI display state ─────────────────────────────────────────────────────────
 
@@ -53,9 +55,10 @@ const providers = {
     [ANTIGRAVITY_ACTION_UUID]:    new AntigravityProvider(updatePiDisplay),
     [OPENAI_CREDITS_ACTION_UUID]: new OpenAiCreditsProvider(updatePiDisplay),
     [DEEPSEEK_ACTION_UUID]:       new DeepSeekProvider(updatePiDisplay),
+    [FAL_ACTION_UUID]:            new FalCreditsProvider(updatePiDisplay),
 };
 
-type AllSettings = CopilotSettings | ClaudeUsageSettings | ClaudeCreditsSettings | AntigravitySettings | OpenAiCreditsSettings | DeepSeekSettings;
+type AllSettings = CopilotSettings | ClaudeUsageSettings | ClaudeCreditsSettings | AntigravitySettings | OpenAiCreditsSettings | DeepSeekSettings | FalCreditsSettings;
 
 function getRunner(action: KeyAction<any>): (() => Promise<void>) | null {
     const provider = providers[action.manifestId as keyof typeof providers];

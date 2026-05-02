@@ -24,6 +24,8 @@ This repository contains an Elgato Stream Deck plugin written in TypeScript. It 
 *   `au.jkang.codingtoolquotachecker.sdPlugin/pi-claude-credits.html`: The Property Inspector for the **Claude API Credits** action. Handles saving the `apiKey` and `organizationId`.
 *   `au.jkang.codingtoolquotachecker.sdPlugin/pi-antigravity.html`: The Property Inspector for the **Antigravity Quota** action. Handles saving the `modelLabel`.
 *   `au.jkang.codingtoolquotachecker.sdPlugin/pi-openai-credits.html`: The Property Inspector for the **OpenAI Credits** action. Handles saving the `sessionToken`.
+*   `au.jkang.codingtoolquotachecker.sdPlugin/pi-deepseek.html`: The Property Inspector for the **DeepSeek Balance** action. Handles saving the `apiKey`.
+*   `au.jkang.codingtoolquotachecker.sdPlugin/pi-fal-credits.html`: The Property Inspector for the **FAL.AI Balance** action. Handles saving the `apiKey`.
 
 ## Important Notes for AI Agents
 

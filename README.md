@@ -11,6 +11,8 @@ A Stream Deck plugin to monitor coding-tool quotas and credit balances directly 
 *   **Claude API Credits:** Displays your remaining prepaid credit balance from the Anthropic API platform.
 *   **Antigravity Quota:** Displays the remaining quota percentage for a model in the locally-running Antigravity language server (Windows only).
 *   **OpenAI Credits:** Displays your remaining OpenAI credit balance using the undocumented billing endpoint.
+*   **DeepSeek Balance:** Displays your remaining DeepSeek API credit balance.
+*   **FAL.AI Balance:** Displays your remaining FAL.AI credit balance.
 
 ## Installation
 
@@ -92,3 +94,15 @@ Displays your remaining OpenAI credit balance using the undocumented `credit_gra
     *   Copy the value of the `__Secure-next-auth.session-token` or equivalent session cookie, or capture the `Authorization` header from a network request.
 
 The button displays the `total_available` balance as a dollar amount (e.g. `$23.85`).
+
+### DeepSeek Balance
+
+Displays your remaining DeepSeek API credit balance.
+
+*   **API Key:** Your DeepSeek API key (starts with `sk-...`). Create one at [platform.deepseek.com](https://platform.deepseek.com).
+
+### FAL.AI Balance
+
+Displays your remaining FAL.AI credit balance.
+
+*   **Admin API Key:** Your FAL.AI Admin API key. Create one at [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys).
