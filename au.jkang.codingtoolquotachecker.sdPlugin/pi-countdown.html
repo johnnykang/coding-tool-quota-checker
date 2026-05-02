@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>Refresh Timer</title>
+    <style>
+        body { font-family: sans-serif; font-size: 10pt; color: white; background-color: transparent; }
+        .wrap { padding: 10px; box-sizing: border-box; }
+        .hint { font-size: 8pt; color: #888; margin-top: 2px; }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <p class="hint">Displays a countdown to the next automatic refresh across all buttons.</p>
+        <p class="hint">Press the key to refresh all buttons immediately.</p>
+    </div>
+
+    <script>
+        function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent) {
+            const ws = new WebSocket('ws://127.0.0.1:' + inPort);
+            ws.onopen = function () {
+                ws.send(JSON.stringify({ "event": inRegisterEvent, "uuid": inPluginUUID }));
+            };
+        }
+    </script>
+</body>
+
+</html>

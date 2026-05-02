@@ -9,6 +9,7 @@ import { OpenAiCreditsProvider, OpenAiCreditsSettings } from "./providers/openai
 import { DeepSeekProvider, DeepSeekSettings } from "./providers/deepseek";
 import { FalCreditsProvider, FalCreditsSettings } from "./providers/fal-credits";
 import { encryptDpapi, isDpapiEncrypted } from "./dpapi";
+import { generateCountdownSvg, generateMessageSvg } from "./svg";
 
 streamDeck.logger.setLevel(LogLevel.INFO);
 
@@ -21,6 +22,7 @@ const ANTIGRAVITY_ACTION_UUID     = "au.jkang.codingtoolquotachecker.antigravity
 const OPENAI_CREDITS_ACTION_UUID  = "au.jkang.codingtoolquotachecker.openaicredits";
 const DEEPSEEK_ACTION_UUID        = "au.jkang.codingtoolquotachecker.deepseek";
 const FAL_ACTION_UUID             = "au.jkang.codingtoolquotachecker.fal";
+const COUNTDOWN_ACTION_UUID       = "au.jkang.codingtoolquotachecker.countdown";
 
 // ─── PI display state ─────────────────────────────────────────────────────────
 
@@ -70,34 +72,100 @@ function getRunner(action: KeyAction<any>): (() => Promise<void>) | null {
 // ─── Interval management ──────────────────────────────────────────────────────
 
 const POLL_INTERVAL_MS = 5 * 60 * 1000;
+const POLL_INTERVAL_SECS = POLL_INTERVAL_MS / 1000;
+
 const actionIntervals = new Map<string, NodeJS.Timeout>();
+const lastPollTimestamps = new Map<string, number>();
+const activeRunners = new Map<string, () => Promise<void>>();
+
+/** (Re-)start the auto-poll interval for a single action. */
+function startPolling(actionId: string, runner: () => Promise<void>): void {
+    if (actionIntervals.has(actionId)) {
+        clearInterval(actionIntervals.get(actionId)!);
+    }
+    lastPollTimestamps.set(actionId, Date.now());
+    actionIntervals.set(actionId, setInterval(() => {
+        lastPollTimestamps.set(actionId, Date.now());
+        runner();
+    }, POLL_INTERVAL_MS));
+}
+
+// ─── Countdown timer ──────────────────────────────────────────────────────────
+
+const countdownActions = new Map<string, { action: KeyAction<any>; interval: NodeJS.Timeout }>();
+
+function getSecondsUntilNextRefresh(): number | null {
+    if (lastPollTimestamps.size === 0) return null;
+    let minRemaining = Infinity;
+    for (const timestamp of lastPollTimestamps.values()) {
+        const remaining = POLL_INTERVAL_MS - (Date.now() - timestamp);
+        if (remaining < minRemaining) minRemaining = remaining;
+    }
+    return Math.max(0, Math.ceil(minRemaining / 1000));
+}
+
+function updateAllCountdowns(): void {
+    const secs = getSecondsUntilNextRefresh();
+    for (const { action } of countdownActions.values()) {
+        if (secs === null) {
+            action.setImage(generateMessageSvg("--:--", "NO DATA", "#666"));
+        } else {
+            action.setImage(generateCountdownSvg(secs, POLL_INTERVAL_SECS));
+        }
+    }
+}
 
 // ─── Action lifecycle ─────────────────────────────────────────────────────────
 
 streamDeck.actions.onWillAppear<AllSettings>((ev) => {
     const action = ev.action as KeyAction<any>;
+
+    // Countdown actions have their own lifecycle
+    if (action.manifestId === COUNTDOWN_ACTION_UUID) {
+        const interval = setInterval(updateAllCountdowns, 1000);
+        countdownActions.set(action.id, { action, interval });
+        updateAllCountdowns();
+        return;
+    }
+
     const runner = getRunner(action);
     if (!runner) return;
 
+    activeRunners.set(action.id, runner);
     runner();
-
-    if (actionIntervals.has(action.id)) {
-        clearInterval(actionIntervals.get(action.id)!);
-    }
-
-    actionIntervals.set(action.id, setInterval(runner, POLL_INTERVAL_MS));
+    startPolling(action.id, runner);
 });
 
 streamDeck.actions.onWillDisappear<AllSettings>((ev) => {
     const action = ev.action as KeyAction<any>;
+
+    if (countdownActions.has(action.id)) {
+        clearInterval(countdownActions.get(action.id)!.interval);
+        countdownActions.delete(action.id);
+        return;
+    }
+
     if (actionIntervals.has(action.id)) {
         clearInterval(actionIntervals.get(action.id)!);
         actionIntervals.delete(action.id);
     }
+    activeRunners.delete(action.id);
+    lastPollTimestamps.delete(action.id);
 });
 
 streamDeck.actions.onKeyDown<AllSettings>((ev) => {
     const action = ev.action as KeyAction<any>;
+
+    // Countdown key press → refresh all buttons and reset their intervals
+    if (action.manifestId === COUNTDOWN_ACTION_UUID) {
+        for (const [id, runner] of activeRunners) {
+            runner();
+            startPolling(id, runner);
+        }
+        updateAllCountdowns();
+        return;
+    }
+
     getRunner(action)?.();
 });
 

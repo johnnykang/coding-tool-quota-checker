@@ -1,23 +1,23 @@
 {
     "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
     "UUID": "au.jkang.codingtoolquotachecker",
-    "Name": "Copilot Quota Marker",
+    "Name": "AI Quota",
     "Version": "1.0.0.0",
-    "Author": "Developer",
+    "Author": "Johnny Kang",
     "Description": "Checks GitHub Copilot remaining premium requests and Claude Code usage.",
-    "Icon": "imgs/icon",
-    "Category": "Copilot Quota Marker",
-    "CategoryIcon": "imgs/icon",
+    "Icon": "imgs/plugin-icon",
+    "Category": "AI Quota",
+    "CategoryIcon": "imgs/category-icon",
     "Actions": [
         {
             "Name": "Copilot Quota",
             "UUID": "au.jkang.codingtoolquotachecker.action",
-            "Icon": "imgs/icon",
+            "Icon": "imgs/copilot-action",
             "Tooltip": "Displays remaining Copilot premium quota",
             "PropertyInspectorPath": "pi.html",
             "States": [
                 {
-                    "Image": "imgs/icon",
+                    "Image": "imgs/copilot-provider",
                     "TitleAlignment": "middle"
                 }
             ],
@@ -28,12 +28,12 @@
         {
             "Name": "Claude Code Usage",
             "UUID": "au.jkang.codingtoolquotachecker.claude",
-            "Icon": "imgs/claude-icon",
+            "Icon": "imgs/claude-action",
             "Tooltip": "Displays Claude Code usage percentage for the selected window",
             "PropertyInspectorPath": "pi-claude.html",
             "States": [
                 {
-                    "Image": "imgs/claude-icon",
+                    "Image": "imgs/claude-provider",
                     "TitleAlignment": "middle"
                 }
             ],
@@ -44,12 +44,12 @@
         {
             "Name": "Claude Code Credits",
             "UUID": "au.jkang.codingtoolquotachecker.claudecredits",
-            "Icon": "imgs/claude-icon",
+            "Icon": "imgs/claude-action",
             "Tooltip": "Displays remaining Claude Code prepaid credits",
             "PropertyInspectorPath": "pi-claude-credits.html",
             "States": [
                 {
-                    "Image": "imgs/claude-icon",
+                    "Image": "imgs/claude-provider",
                     "TitleAlignment": "middle"
                 }
             ],
@@ -60,12 +60,12 @@
         {
             "Name": "Antigravity Quota",
             "UUID": "au.jkang.codingtoolquotachecker.antigravity",
-            "Icon": "imgs/icon",
+            "Icon": "imgs/antigravity-action",
             "Tooltip": "Displays remaining Antigravity model quota",
             "PropertyInspectorPath": "pi-antigravity.html",
             "States": [
                 {
-                    "Image": "imgs/icon",
+                    "Image": "imgs/antigravity-provider",
                     "TitleAlignment": "middle"
                 }
             ],
@@ -76,12 +76,12 @@
         {
             "Name": "OpenAI Credits",
             "UUID": "au.jkang.codingtoolquotachecker.openaicredits",
-            "Icon": "imgs/icon",
+            "Icon": "imgs/openai-action",
             "Tooltip": "Displays remaining OpenAI credit balance",
             "PropertyInspectorPath": "pi-openai-credits.html",
             "States": [
                 {
-                    "Image": "imgs/icon",
+                    "Image": "imgs/openai-provider",
                     "TitleAlignment": "middle"
                 }
             ],
@@ -92,12 +92,12 @@
         {
             "Name": "DeepSeek Balance",
             "UUID": "au.jkang.codingtoolquotachecker.deepseek",
-            "Icon": "imgs/icon",
+            "Icon": "imgs/deepseek-action",
             "Tooltip": "Displays remaining DeepSeek API balance",
             "PropertyInspectorPath": "pi-deepseek.html",
             "States": [
                 {
-                    "Image": "imgs/icon",
+                    "Image": "imgs/deepseek-provider",
                     "TitleAlignment": "middle"
                 }
             ],
@@ -108,12 +108,28 @@
         {
             "Name": "FAL.AI Balance",
             "UUID": "au.jkang.codingtoolquotachecker.fal",
-            "Icon": "imgs/icon",
+            "Icon": "imgs/fal-action",
             "Tooltip": "Displays remaining FAL.AI credit balance",
             "PropertyInspectorPath": "pi-fal-credits.html",
             "States": [
                 {
-                    "Image": "imgs/icon",
+                    "Image": "imgs/fal-provider",
+                    "TitleAlignment": "middle"
+                }
+            ],
+            "Controllers": [
+                "Keypad"
+            ]
+        },
+        {
+            "Name": "Refresh Timer",
+            "UUID": "au.jkang.codingtoolquotachecker.countdown",
+            "Icon": "imgs/refresh-action",
+            "Tooltip": "Countdown to next refresh. Press to refresh all buttons.",
+            "PropertyInspectorPath": "pi-countdown.html",
+            "States": [
+                {
+                    "Image": "imgs/refresh-provider",
                     "TitleAlignment": "middle"
                 }
             ],

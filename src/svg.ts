@@ -105,6 +105,34 @@ export function generateCountSvg(count: number, limit: number, label: string = "
     `);
 }
 
+export function generateCountdownSvg(secondsRemaining: number, totalSeconds: number): string {
+    const mins = Math.floor(secondsRemaining / 60);
+    const secs = secondsRemaining % 60;
+    const timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+
+    const r = 48;
+    const c = 2 * Math.PI * r;
+    const progress = totalSeconds > 0 ? secondsRemaining / totalSeconds : 0;
+    const dash = progress * c;
+
+    let color = "#3b82f6"; // Blue (plenty of time)
+    if (secondsRemaining <= 30) color = "#10b981"; // Green (imminent)
+    else if (secondsRemaining <= 60) color = "#f59e0b"; // Amber (soon)
+
+    return encodeSvg(`
+        <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
+            <rect width="144" height="144" fill="#0a0a0a" />
+            <circle cx="72" cy="72" r="${r}" fill="none" stroke="#222" stroke-width="10" />
+            ${dash > 0 ? `<circle cx="72" cy="72" r="${r}" fill="none" stroke="${color}" stroke-width="10"
+                stroke-dasharray="${dash} ${c}" stroke-dashoffset="0" stroke-linecap="round"
+                transform="rotate(-90 72 72)" />` : ""}
+            <text x="72" y="84" font-family="sans-serif" font-size="36" font-weight="bold" fill="#fff" text-anchor="middle">${timeStr}</text>
+            <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">REFRESH</text>
+            <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">TIMER</text>
+        </svg>
+    `);
+}
+
 export function generateCreditSvg(amountInCents: number, currency: string, label: string = "CREDITS", topLabel: string = "CLAUDE", diffStr?: string, diffColor?: string): string {
     const dollars = (amountInCents / 100).toFixed(2);
     const prefix = currency === "USD" ? "$" : currency + " ";
