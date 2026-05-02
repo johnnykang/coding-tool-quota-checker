@@ -6,6 +6,7 @@ export type DiffFormatOptions = {
 
 export class DiffTracker {
     private previousValues = new Map<string, number>();
+    private lastDiffs = new Map<string, { diffStr?: string; diffColor?: string }>();
 
     public getDiff(actionId: string, currentValue: number, formatOptions?: DiffFormatOptions): { diffStr?: string; diffColor?: string } {
         const prev = this.previousValues.get(actionId);
@@ -17,7 +18,7 @@ export class DiffTracker {
 
         const delta = currentValue - prev;
         if (Math.abs(delta) < 0.01) {
-            return {};
+            return this.lastDiffs.get(actionId) || {};
         }
 
         const isPositive = delta > 0;
@@ -28,9 +29,12 @@ export class DiffTracker {
         const absVal = Math.abs(delta);
         const valStr = formatOptions?.prefix === "$" ? absVal.toFixed(2) : absVal.toString();
         
-        return {
+        const diffData = {
             diffStr: `${isPositive ? "+" : "-"}${formatOptions?.prefix ?? ""}${valStr}${formatOptions?.suffix ?? ""}`,
             diffColor: color
         };
+        
+        this.lastDiffs.set(actionId, diffData);
+        return diffData;
     }
 }
