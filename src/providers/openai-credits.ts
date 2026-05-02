@@ -3,6 +3,7 @@ import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generateCreditSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
 import { DiffTracker } from "./diff-tracker";
+import { resolveSecret } from "../dpapi";
 
 export type OpenAiCreditsSettings = {
     sessionToken?: string;
@@ -22,8 +23,8 @@ export class OpenAiCreditsProvider implements IQuotaProvider<OpenAiCreditsSettin
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<OpenAiCreditsSettings>): Promise<void> {
-        const settings = await action.getSettings();
-        const { sessionToken } = settings;
+        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+        const sessionToken = await resolveSecret(globalSettings["openai.sessionToken"]);
 
         if (!sessionToken) {
             await action.setImage(generateMessageSvg("No", "Token"));

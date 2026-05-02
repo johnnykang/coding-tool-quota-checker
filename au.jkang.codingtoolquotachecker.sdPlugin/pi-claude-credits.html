@@ -53,14 +53,13 @@
             websocket = new WebSocket('ws://127.0.0.1:' + inPort);
 
             websocket.onopen = function () {
+                websocket.send(JSON.stringify({ "event": inRegisterEvent, "uuid": pluginUUID }));
+                websocket.send(JSON.stringify({ "event": "getSettings", "context": pluginUUID }));
                 websocket.send(JSON.stringify({
-                    "event": inRegisterEvent,
-                    "uuid": pluginUUID
-                }));
-
-                websocket.send(JSON.stringify({
-                    "event": "getSettings",
-                    "context": pluginUUID
+                    "event": "sendToPlugin",
+                    "action": actionInfo.action,
+                    "context": pluginUUID,
+                    "payload": { "type": "getSecretStatus", "keys": ["claudeCredits.apiKey"] }
                 }));
             };
 
@@ -68,31 +67,45 @@
                 const jsonObj = JSON.parse(evt.data);
                 if (jsonObj.event === 'didReceiveSettings') {
                     const s = jsonObj.payload.settings;
-                    if (s.apiKey)         document.getElementById('apiKey').value = s.apiKey;
                     if (s.organizationId) document.getElementById('organizationId').value = s.organizationId;
                 } else if (jsonObj.event === 'sendToPropertyInspector') {
-                    if (jsonObj.payload && jsonObj.payload.type === 'updateDisplay') {
-                        document.getElementById('displayValue').innerText = jsonObj.payload.value;
+                    const p = jsonObj.payload;
+                    if (p && p.type === 'secretStatus') {
+                        const field = document.getElementById('apiKey');
+                        field.placeholder = p.status['claudeCredits.apiKey']
+                            ? '(saved \u2014 leave blank to keep)'
+                            : 'sk-ant-api03-\u2026';
+                    } else if (p && p.type === 'updateDisplay') {
+                        document.getElementById('displayValue').innerText = p.value;
                     }
                 }
             };
 
             document.getElementById('saveButton').addEventListener('click', function () {
-                const payload = {
-                    apiKey:         document.getElementById('apiKey').value,
-                    organizationId: document.getElementById('organizationId').value
-                };
+                const val = document.getElementById('apiKey').value.trim();
+                if (val) {
+                    websocket.send(JSON.stringify({
+                        "event": "sendToPlugin",
+                        "action": actionInfo.action,
+                        "context": pluginUUID,
+                        "payload": { "type": "saveSecret", "key": "claudeCredits.apiKey", "value": val }
+                    }));
+                    const field = document.getElementById('apiKey');
+                    field.value = '';
+                    field.placeholder = '(saved \u2014 leave blank to keep)';
+                }
                 websocket.send(JSON.stringify({
                     "event": "setSettings",
                     "context": pluginUUID,
-                    "payload": payload
+                    "payload": { organizationId: document.getElementById('organizationId').value }
                 }));
                 const status = document.getElementById('status');
-                status.innerText = "Saved!";
-                setTimeout(() => status.innerText = "", 2000);
+                status.innerText = 'Saved!';
+                setTimeout(() => status.innerText = '', 2000);
             });
         }
     </script>
 </body>
 
 </html>
+

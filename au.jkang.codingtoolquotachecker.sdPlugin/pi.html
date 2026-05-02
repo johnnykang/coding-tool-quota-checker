@@ -37,51 +37,57 @@
         function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, inInfo, inActionInfo) {
             pluginUUID = inPluginUUID;
             actionInfo = JSON.parse(inActionInfo);
-            
+
             websocket = new WebSocket('ws://127.0.0.1:' + inPort);
 
             websocket.onopen = function () {
-                // Register property inspector
+                websocket.send(JSON.stringify({ "event": inRegisterEvent, "uuid": pluginUUID }));
+                // Ask plugin whether the secret is already saved (plugin checks globalSettings)
                 websocket.send(JSON.stringify({
-                    "event": inRegisterEvent,
-                    "uuid": pluginUUID
-                }));
-
-                // Get settings
-                websocket.send(JSON.stringify({
-                    "event": "getSettings",
-                    "context": pluginUUID
+                    "event": "sendToPlugin",
+                    "action": actionInfo.action,
+                    "context": pluginUUID,
+                    "payload": { "type": "getSecretStatus", "keys": ["copilot.authToken"] }
                 }));
             };
 
             websocket.onmessage = function (evt) {
                 const jsonObj = JSON.parse(evt.data);
-                if (jsonObj.event === 'didReceiveSettings') {
-                    const settings = jsonObj.payload.settings;
-                    if (settings.authToken) {
-                        document.getElementById('authToken').value = settings.authToken;
-                    }
-                } else if (jsonObj.event === 'sendToPropertyInspector') {
-                    if (jsonObj.payload && jsonObj.payload.type === 'updateDisplay') {
-                        document.getElementById('displayValue').innerText = jsonObj.payload.value;
+                if (jsonObj.event === 'sendToPropertyInspector') {
+                    const p = jsonObj.payload;
+                    if (p && p.type === 'secretStatus') {
+                        const field = document.getElementById('authToken');
+                        field.placeholder = p.status['copilot.authToken']
+                            ? '(saved \u2014 leave blank to keep)'
+                            : 'ghu_\u2026';
+                    } else if (p && p.type === 'updateDisplay') {
+                        document.getElementById('displayValue').innerText = p.value;
                     }
                 }
             };
-            
-            document.getElementById('saveButton').addEventListener('click', function() {
-                const token = document.getElementById('authToken').value;
-                const payload = { authToken: token };
-                websocket.send(JSON.stringify({
-                    "event": "setSettings",
-                    "context": pluginUUID,
-                    "payload": payload
-                }));
+
+            document.getElementById('saveButton').addEventListener('click', function () {
+                const val = document.getElementById('authToken').value.trim();
+                if (val) {
+                    // Send plaintext to plugin — plugin encrypts and stores in globalSettings.
+                    websocket.send(JSON.stringify({
+                        "event": "sendToPlugin",
+                        "action": actionInfo.action,
+                        "context": pluginUUID,
+                        "payload": { "type": "saveSecret", "key": "copilot.authToken", "value": val }
+                    }));
+                    // Update placeholder to reflect saved state.
+                    const field = document.getElementById('authToken');
+                    field.value = '';
+                    field.placeholder = '(saved \u2014 leave blank to keep)';
+                }
                 const status = document.getElementById('status');
-                status.innerText = "Saved!";
-                setTimeout(() => status.innerText = "", 2000);
+                status.innerText = val ? 'Saved!' : 'Nothing changed.';
+                setTimeout(() => status.innerText = '', 2000);
             });
         }
     </script>
+
 </body>
 
 </html>

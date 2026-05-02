@@ -3,6 +3,7 @@ import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generatePercentageSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
 import { DiffTracker } from "./diff-tracker";
+import { resolveSecret } from "../dpapi";
 
 export type ClaudeUsageSettings = {
     sessionKey?: string;
@@ -59,7 +60,9 @@ export class ClaudeUsageProvider implements IQuotaProvider<ClaudeUsageSettings> 
 
     async check(action: KeyAction<ClaudeUsageSettings>): Promise<void> {
         const settings = await action.getSettings();
-        const { sessionKey, organizationId, usagePeriod = "5-hour" } = settings;
+        const { organizationId, usagePeriod = "5-hour" } = settings;
+        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+        const sessionKey = await resolveSecret(globalSettings["claude.sessionKey"]);
 
         if (!sessionKey || !organizationId) {
             await action.setImage(generateMessageSvg("No", "Creds"));

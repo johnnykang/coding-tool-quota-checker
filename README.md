@@ -106,3 +106,7 @@ Displays your remaining DeepSeek API credit balance.
 Displays your remaining FAL.AI credit balance.
 
 *   **Admin API Key:** Your FAL.AI Admin API key. Create one at [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys).
+
+## Security & Secret Storage
+
+All API keys and session tokens entered in the Property Inspector are stored in Elgato's `globalSettings` store, which is **not** included in Stream Deck profile exports or backups.

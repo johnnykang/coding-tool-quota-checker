@@ -3,6 +3,7 @@ import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generateCreditSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
 import { DiffTracker } from "./diff-tracker";
+import { resolveSecret } from "../dpapi";
 
 export type ClaudeCreditsSettings = {
     apiKey?: string;
@@ -23,7 +24,9 @@ export class ClaudeCreditsProvider implements IQuotaProvider<ClaudeCreditsSettin
 
     async check(action: KeyAction<ClaudeCreditsSettings>): Promise<void> {
         const settings = await action.getSettings();
-        const { apiKey, organizationId } = settings;
+        const { organizationId } = settings;
+        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+        const apiKey = await resolveSecret(globalSettings["claudeCredits.apiKey"]);
 
         if (!apiKey || !organizationId) {
             await action.setImage(generateMessageSvg("No", "Creds"));

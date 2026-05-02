@@ -3,6 +3,7 @@ import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generateCreditSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
 import { DiffTracker } from "./diff-tracker";
+import { resolveSecret } from "../dpapi";
 
 export type DeepSeekSettings = {
     apiKey?: string;
@@ -26,8 +27,8 @@ export class DeepSeekProvider implements IQuotaProvider<DeepSeekSettings> {
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<DeepSeekSettings>): Promise<void> {
-        const settings = await action.getSettings();
-        const { apiKey } = settings;
+        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+        const apiKey = await resolveSecret(globalSettings["deepseek.apiKey"]);
 
         if (!apiKey) {
             await action.setImage(generateMessageSvg("No", "Key"));

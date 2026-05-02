@@ -3,6 +3,7 @@ import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generateCreditSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
 import { DiffTracker } from "./diff-tracker";
+import { resolveSecret } from "../dpapi";
 
 export type FalCreditsSettings = {
     apiKey?: string;
@@ -22,8 +23,8 @@ export class FalCreditsProvider implements IQuotaProvider<FalCreditsSettings> {
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<FalCreditsSettings>): Promise<void> {
-        const settings = await action.getSettings();
-        const { apiKey } = settings;
+        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+        const apiKey = await resolveSecret(globalSettings["fal.apiKey"]);
 
         if (!apiKey) {
             await action.setImage(generateMessageSvg("No", "Key"));

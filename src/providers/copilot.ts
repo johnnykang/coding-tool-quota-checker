@@ -3,6 +3,7 @@ import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generateCountSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
 import { DiffTracker } from "./diff-tracker";
+import { resolveSecret } from "../dpapi";
 
 export type CopilotSettings = {
     authToken?: string;
@@ -14,8 +15,8 @@ export class CopilotProvider implements IQuotaProvider<CopilotSettings> {
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<CopilotSettings>): Promise<void> {
-        const settings = await action.getSettings();
-        const token = settings.authToken;
+        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+        const token = await resolveSecret(globalSettings["copilot.authToken"]);
 
         if (!token) {
             await action.setImage(generateMessageSvg("No", "Token"));

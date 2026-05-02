@@ -8,6 +8,7 @@ import { AntigravityProvider, AntigravitySettings } from "./providers/antigravit
 import { OpenAiCreditsProvider, OpenAiCreditsSettings } from "./providers/openai-credits";
 import { DeepSeekProvider, DeepSeekSettings } from "./providers/deepseek";
 import { FalCreditsProvider, FalCreditsSettings } from "./providers/fal-credits";
+import { encryptDpapi, isDpapiEncrypted } from "./dpapi";
 
 streamDeck.logger.setLevel(LogLevel.INFO);
 
@@ -98,6 +99,48 @@ streamDeck.actions.onWillDisappear<AllSettings>((ev) => {
 streamDeck.actions.onKeyDown<AllSettings>((ev) => {
     const action = ev.action as KeyAction<any>;
     getRunner(action)?.();
+});
+
+// ─── Secret management (PI → plugin) ─────────────────────────────────────────
+
+type SecretMessage =
+    | { type: "saveSecret"; key: string; value: string }
+    | { type: "getSecretStatus"; keys: string[] };
+
+streamDeck.ui.onSendToPlugin<SecretMessage>(async (ev) => {
+    const msg = ev.payload;
+
+    if (msg.type === "saveSecret") {
+        const { key, value } = msg;
+        let stored: string;
+        if (process.platform === "win32") {
+            try {
+                stored = await encryptDpapi(value);
+            } catch (e) {
+                streamDeck.logger.error(`DPAPI encrypt failed for key '${key}': ${e}`);
+                return;
+            }
+        } else {
+            stored = value; // macOS/Linux: store plaintext
+        }
+        const current = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+        await streamDeck.settings.setGlobalSettings({ ...current, [key]: stored });
+        streamDeck.logger.info(`Secret saved for key '${key}'`);
+        return;
+    }
+
+    if (msg.type === "getSecretStatus") {
+        const globals = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+        const status: Record<string, boolean> = {};
+        for (const k of msg.keys) {
+            const val = globals[k] ?? "";
+            status[k] = process.platform === "win32"
+                ? isDpapiEncrypted(val)
+                : val.length > 0;
+        }
+        streamDeck.ui.current?.sendToPropertyInspector({ type: "secretStatus", status });
+        return;
+    }
 });
 
 streamDeck.connect();
