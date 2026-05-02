@@ -2,6 +2,7 @@ import { KeyAction } from "@elgato/streamdeck";
 import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generateCreditSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
+import { DiffTracker } from "./diff-tracker";
 
 export type OpenAiCreditsSettings = {
     sessionToken?: string;
@@ -16,6 +17,8 @@ type CreditGrantsResponse = {
 };
 
 export class OpenAiCreditsProvider implements IQuotaProvider<OpenAiCreditsSettings> {
+    private readonly diffTracker = new DiffTracker();
+
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<OpenAiCreditsSettings>): Promise<void> {
@@ -56,7 +59,9 @@ export class OpenAiCreditsProvider implements IQuotaProvider<OpenAiCreditsSettin
 
             // total_available is already in dollars (not cents)
             const amountDollars = data.total_available;
-            await action.setImage(generateCreditSvg(amountDollars * 100, "USD", "CREDITS", "OPENAI"));
+            const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, amountDollars, { prefix: "$" });
+
+            await action.setImage(generateCreditSvg(amountDollars * 100, "USD", "CREDITS", "OPENAI", diffStr, diffColor));
             this.updatePiDisplay(action, `$${amountDollars.toFixed(2)}`);
 
         } catch (e) {

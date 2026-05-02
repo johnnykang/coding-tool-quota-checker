@@ -2,6 +2,7 @@ import { KeyAction } from "@elgato/streamdeck";
 import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generatePercentageSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
+import { DiffTracker } from "./diff-tracker";
 
 export type ClaudeUsageSettings = {
     sessionKey?: string;
@@ -52,6 +53,8 @@ const LABEL_MAP: Record<string, string> = {
 };
 
 export class ClaudeUsageProvider implements IQuotaProvider<ClaudeUsageSettings> {
+    private readonly diffTracker = new DiffTracker();
+
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<ClaudeUsageSettings>): Promise<void> {
@@ -116,7 +119,9 @@ export class ClaudeUsageProvider implements IQuotaProvider<ClaudeUsageSettings> 
             const pct = Math.round(periodData.utilization);
             const label = LABEL_MAP[usagePeriod] ?? usagePeriod.toUpperCase();
 
-            await action.setImage(generatePercentageSvg(pct, label));
+            const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, pct, { suffix: "%", inverseColor: true });
+
+            await action.setImage(generatePercentageSvg(pct, label, diffStr, diffColor));
             this.updatePiDisplay(action, `${pct}% / 100%`);
 
         } catch (e) {

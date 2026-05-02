@@ -2,12 +2,15 @@ import { KeyAction } from "@elgato/streamdeck";
 import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generateCountSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
+import { DiffTracker } from "./diff-tracker";
 
 export type CopilotSettings = {
     authToken?: string;
 };
 
 export class CopilotProvider implements IQuotaProvider<CopilotSettings> {
+    private readonly diffTracker = new DiffTracker();
+
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<CopilotSettings>): Promise<void> {
@@ -42,7 +45,9 @@ export class CopilotProvider implements IQuotaProvider<CopilotSettings> {
             const limit = data?.quota_snapshots?.premium_interactions?.entitlement || remaining;
 
             if (remaining !== undefined) {
-                await action.setImage(generateCountSvg(remaining, limit, "LEFT"));
+                const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, remaining);
+
+                await action.setImage(generateCountSvg(remaining, limit, "LEFT", diffStr, diffColor));
                 this.updatePiDisplay(action, `${remaining} / ${limit}`);
             } else {
                 await action.setImage(generateMessageSvg("Err", "Data"));

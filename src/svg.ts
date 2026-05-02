@@ -2,6 +2,11 @@ export function encodeSvg(svg: string): string {
     return `data:image/svg+xml;base64,${Buffer.from(svg.trim()).toString('base64')}`;
 }
 
+function renderDiffElement(diffStr?: string, diffColor?: string): string {
+    if (!diffStr) return "";
+    return `<text x="72" y="104" font-family="sans-serif" font-size="18" font-weight="600" fill="${diffColor ?? '#888'}" text-anchor="middle">${diffStr}</text>`;
+}
+
 export function generateLoadingSvg(): string {
     return encodeSvg(`
         <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
@@ -40,7 +45,7 @@ export function generateMessageSvg(title: string, subtitle?: string, color: stri
     `);
 }
 
-export function generatePercentageSvg(pct: number, label: string): string {
+export function generatePercentageSvg(pct: number, label: string, diffStr?: string, diffColor?: string): string {
     const r = 48;
     const c = 2 * Math.PI * r;
     // Ring arc fills proportionally to pct — same value shown in the text label
@@ -52,6 +57,9 @@ export function generatePercentageSvg(pct: number, label: string): string {
     if (clampedPct >= 90) color = "#ef4444"; // Red (Critical)
     else if (clampedPct >= 70) color = "#f59e0b"; // Amber (Warning)
 
+    const mainY = diffStr ? 76 : 84;
+    const diffEl = renderDiffElement(diffStr, diffColor);
+
     return encodeSvg(`
         <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
             <rect width="144" height="144" fill="#0a0a0a" />
@@ -59,14 +67,15 @@ export function generatePercentageSvg(pct: number, label: string): string {
             ${clampedPct > 0 ? `<circle cx="72" cy="72" r="${r}" fill="none" stroke="${color}" stroke-width="10"
                 stroke-dasharray="${dash} ${gap}" stroke-dashoffset="0" stroke-linecap="round"
                 transform="rotate(-90 72 72)" />` : ""}
-            <text x="72" y="84" font-family="sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">${pct}%</text>
+            <text x="72" y="${mainY}" font-family="sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">${pct}%</text>
+            ${diffEl}
             <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
             <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="2">CLAUDE</text>
         </svg>
     `);
 }
 
-export function generateCountSvg(count: number, limit: number, label: string = "LEFT"): string {
+export function generateCountSvg(count: number, limit: number, label: string = "LEFT", diffStr?: string, diffColor?: string): string {
     const percentage = limit > 0 ? Math.max(0, Math.min(100, (count / limit) * 100)) : 0;
     const r = 48;
     const c = 2 * Math.PI * r;
@@ -77,6 +86,10 @@ export function generateCountSvg(count: number, limit: number, label: string = "
     if (percentage <= 10) color = "#ef4444"; // Red (Critical)
     else if (percentage <= 30) color = "#f59e0b"; // Amber (Warning)
 
+    const mainY = diffStr ? 76 : 86;
+    const mainSize = diffStr ? 38 : 44;
+    const diffEl = renderDiffElement(diffStr, diffColor);
+
     return encodeSvg(`
         <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
             <rect width="144" height="144" fill="#0a0a0a" />
@@ -84,26 +97,32 @@ export function generateCountSvg(count: number, limit: number, label: string = "
             ${percentage > 0 ? `<circle cx="72" cy="72" r="${r}" fill="none" stroke="${color}" stroke-width="10" 
                 stroke-dasharray="${dash} ${gap}" stroke-dashoffset="0" stroke-linecap="round" 
                 transform="rotate(-90 72 72)" />` : ""}
-            <text x="72" y="86" font-family="sans-serif" font-size="44" font-weight="bold" fill="#fff" text-anchor="middle">${count}</text>
+            <text x="72" y="${mainY}" font-family="sans-serif" font-size="${mainSize}" font-weight="bold" fill="#fff" text-anchor="middle">${count}</text>
+            ${diffEl}
             <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
             <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">COPILOT</text>
         </svg>
     `);
 }
 
-export function generateCreditSvg(amountInCents: number, currency: string, label: string = "CREDITS", topLabel: string = "CLAUDE"): string {
+export function generateCreditSvg(amountInCents: number, currency: string, label: string = "CREDITS", topLabel: string = "CLAUDE", diffStr?: string, diffColor?: string): string {
     const dollars = (amountInCents / 100).toFixed(2);
     const prefix = currency === "USD" ? "$" : currency + " ";
     
     let color = "#10b981"; // Emerald (Good)
     if (amountInCents <= 500) color = "#ef4444"; // Red (Critical) < $5
     else if (amountInCents <= 1000) color = "#f59e0b"; // Amber (Warning) < $10
+
+    const mainY = diffStr ? 76 : 86;
+    const mainSize = diffStr ? 26 : 32;
+    const diffEl = renderDiffElement(diffStr, diffColor);
     
     return encodeSvg(`
         <svg xmlns="http://www.w3.org/2000/svg" width="144" height="144" viewBox="0 0 144 144">
             <rect width="144" height="144" fill="#0a0a0a" />
             <circle cx="72" cy="72" r="48" fill="none" stroke="${color}" stroke-width="10" />
-            <text x="72" y="86" font-family="sans-serif" font-size="32" font-weight="bold" fill="#fff" text-anchor="middle">${prefix}${dollars}</text>
+            <text x="72" y="${mainY}" font-family="sans-serif" font-size="${mainSize}" font-weight="bold" fill="#fff" text-anchor="middle">${prefix}${dollars}</text>
+            ${diffEl}
             <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
             <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">${topLabel}</text>
         </svg>

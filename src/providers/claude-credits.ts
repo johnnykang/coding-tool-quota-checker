@@ -2,6 +2,7 @@ import { KeyAction } from "@elgato/streamdeck";
 import streamDeck from "@elgato/streamdeck";
 import { generateLoadingSvg, generateMessageSvg, generateCreditSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
+import { DiffTracker } from "./diff-tracker";
 
 export type ClaudeCreditsSettings = {
     apiKey?: string;
@@ -16,6 +17,8 @@ type ClaudeCreditsResponse = {
 };
 
 export class ClaudeCreditsProvider implements IQuotaProvider<ClaudeCreditsSettings> {
+    private readonly diffTracker = new DiffTracker();
+
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<ClaudeCreditsSettings>): Promise<void> {
@@ -58,8 +61,12 @@ export class ClaudeCreditsProvider implements IQuotaProvider<ClaudeCreditsSettin
 
             const data: ClaudeCreditsResponse = await response.json();
 
-            await action.setImage(generateCreditSvg(data.amount, data.currency, "CREDITS"));
-            const dollars = (data.amount / 100).toFixed(2);
+            // Track diff using dollars, although data.amount is in cents
+            const amountDollars = data.amount / 100;
+            const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, amountDollars, { prefix: data.currency === "USD" ? "$" : data.currency + " " });
+
+            await action.setImage(generateCreditSvg(data.amount, data.currency, "CREDITS", "CLAUDE", diffStr, diffColor));
+            const dollars = amountDollars.toFixed(2);
             const prefix = data.currency === "USD" ? "$" : data.currency + " ";
             this.updatePiDisplay(action, `${prefix}${dollars}`);
 

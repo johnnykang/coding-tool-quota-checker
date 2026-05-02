@@ -5,6 +5,7 @@ import { exec } from "child_process";
 import { promisify } from "util";
 import { generateLoadingSvg, generateMessageSvg, generatePercentageSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
+import { DiffTracker } from "./diff-tracker";
 
 const execAsync = promisify(exec);
 
@@ -91,6 +92,8 @@ async function fetchUserStatus(port: number, csrfToken: string): Promise<any> {
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export class AntigravityProvider implements IQuotaProvider<AntigravitySettings> {
+    private readonly diffTracker = new DiffTracker();
+
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<AntigravitySettings>): Promise<void> {
@@ -205,7 +208,9 @@ export class AntigravityProvider implements IQuotaProvider<AntigravitySettings> 
             // Extract a 4-letter acronym or first 4 chars
             const shortLabel = labelStr.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase();
 
-            await action.setImage(generatePercentageSvg(remainingPercentage, shortLabel));
+            const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, remainingPercentage, { suffix: "%" });
+
+            await action.setImage(generatePercentageSvg(remainingPercentage, shortLabel, diffStr, diffColor));
             this.updatePiDisplay(action, `${remainingPercentage}% / 100%`);
 
         } catch (e) {
