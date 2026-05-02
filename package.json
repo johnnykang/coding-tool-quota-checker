@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "rollup -c",
-    "watch": "rollup -c -w"
+    "watch": "rollup -c -w",
+    "validate": "streamdeck validate au.jkang.codingtoolquotachecker.sdPlugin",
+    "pack": "streamdeck pack au.jkang.codingtoolquotachecker.sdPlugin"
   },
   "dependencies": {
     "@elgato/streamdeck": "^1.1.0"

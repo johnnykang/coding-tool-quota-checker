@@ -6,7 +6,7 @@
     "Author": "Developer",
     "Description": "Checks GitHub Copilot remaining premium requests and Claude Code usage.",
     "Icon": "imgs/icon",
-    "Category": "Utilities",
+    "Category": "Copilot Quota Marker",
     "CategoryIcon": "imgs/icon",
     "Actions": [
         {
@@ -21,7 +21,9 @@
                     "TitleAlignment": "middle"
                 }
             ],
-            "Controllers": ["Keypad"]
+            "Controllers": [
+                "Keypad"
+            ]
         },
         {
             "Name": "Claude Code Usage",
@@ -35,7 +37,9 @@
                     "TitleAlignment": "middle"
                 }
             ],
-            "Controllers": ["Keypad"]
+            "Controllers": [
+                "Keypad"
+            ]
         },
         {
             "Name": "Claude Code Credits",
@@ -49,7 +53,9 @@
                     "TitleAlignment": "middle"
                 }
             ],
-            "Controllers": ["Keypad"]
+            "Controllers": [
+                "Keypad"
+            ]
         },
         {
             "Name": "Antigravity Quota",
@@ -63,7 +69,9 @@
                     "TitleAlignment": "middle"
                 }
             ],
-            "Controllers": ["Keypad"]
+            "Controllers": [
+                "Keypad"
+            ]
         },
         {
             "Name": "OpenAI Credits",
@@ -77,7 +85,9 @@
                     "TitleAlignment": "middle"
                 }
             ],
-            "Controllers": ["Keypad"]
+            "Controllers": [
+                "Keypad"
+            ]
         }
     ],
     "CodePath": "bin/plugin.js",

@@ -482,3 +482,4 @@ $RECYCLE.BIN/
 *.swp
 # Added by code-review-graph
 .code-review-graph/
+*.streamDeckPlugin
