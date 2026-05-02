@@ -1,4 +1,5 @@
-import { KeyAction, JsonObject } from "@elgato/streamdeck";
+import { KeyAction } from "@elgato/streamdeck";
+import { JsonObject } from "@elgato/utils";
 
 /**
  * Contract that every quota provider must satisfy.

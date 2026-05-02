@@ -10,7 +10,7 @@
     "pack": "streamdeck pack au.jkang.codingtoolquotachecker.sdPlugin"
   },
   "dependencies": {
-    "@elgato/streamdeck": "^1.1.0"
+    "@elgato/streamdeck": "^2.1.0"
   },
   "devDependencies": {
     "@elgato/cli": "^1.7.3",

@@ -1,4 +1,4 @@
-import streamDeck, { LogLevel, KeyAction } from "@elgato/streamdeck";
+import streamDeck, { KeyAction } from "@elgato/streamdeck";
 
 import { PiDisplayUpdater } from "./providers/types";
 import { CopilotProvider, CopilotSettings } from "./providers/copilot";
@@ -11,7 +11,7 @@ import { FalCreditsProvider, FalCreditsSettings } from "./providers/fal-credits"
 import { encryptDpapi, isDpapiEncrypted } from "./dpapi";
 import { generateCountdownSvg, generateMessageSvg } from "./svg";
 
-streamDeck.logger.setLevel(LogLevel.INFO);
+streamDeck.logger.setLevel("info");
 
 // ─── Action UUID constants ────────────────────────────────────────────────────
 
@@ -31,8 +31,8 @@ const latestDisplayValues = new Map<string, string>();
 
 const updatePiDisplay: PiDisplayUpdater = (action, displayValue) => {
     latestDisplayValues.set(action.id, displayValue);
-    if (streamDeck.ui.current?.action.id === action.id) {
-        streamDeck.ui.current.sendToPropertyInspector({
+    if (streamDeck.ui.action?.id === action.id) {
+        streamDeck.ui.sendToPropertyInspector({
             type: "updateDisplay",
             value: displayValue
         });
@@ -41,8 +41,8 @@ const updatePiDisplay: PiDisplayUpdater = (action, displayValue) => {
 
 streamDeck.ui.onDidAppear((ev) => {
     const val = latestDisplayValues.get(ev.action.id);
-    if (val && streamDeck.ui.current?.action.id === ev.action.id) {
-        streamDeck.ui.current.sendToPropertyInspector({
+    if (val && streamDeck.ui.action?.id === ev.action.id) {
+        streamDeck.ui.sendToPropertyInspector({
             type: "updateDisplay",
             value: val
         });
@@ -206,7 +206,9 @@ streamDeck.ui.onSendToPlugin<SecretMessage>(async (ev) => {
                 ? isDpapiEncrypted(val)
                 : val.length > 0;
         }
-        streamDeck.ui.current?.sendToPropertyInspector({ type: "secretStatus", status });
+        if (streamDeck.ui.action) {
+            streamDeck.ui.sendToPropertyInspector({ type: "secretStatus", status });
+        }
         return;
     }
 });
