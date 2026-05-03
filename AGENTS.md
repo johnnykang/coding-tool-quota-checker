@@ -32,6 +32,7 @@ This repository contains an Elgato Stream Deck plugin written in TypeScript. It 
 *   The plugin dynamically generates SVG strings and sends them to the Stream Deck software via `action.setImage()`. Do not rely on static image assets for dynamic numbers.
 *   The `sessionKey` (Claude) and `sessionToken` (OpenAI) act as direct cookie/session bypasses. Do not expose or log these values.
 *   Use Australian English spelling in all written output.
+*   When a new provider or action is added, update `README.md` to include it in the introduction paragraph, the Features list, and add a dedicated Configuration section.
 
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph

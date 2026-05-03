@@ -45,7 +45,7 @@ export function generateMessageSvg(title: string, subtitle?: string, color: stri
     `);
 }
 
-export function generatePercentageSvg(pct: number, label: string, diffStr?: string, diffColor?: string): string {
+export function generatePercentageSvg(pct: number, label: string, diffStr?: string, diffColor?: string, topLabel: string = "CLAUDE"): string {
     const r = 48;
     const c = 2 * Math.PI * r;
     // Ring arc fills proportionally to pct — same value shown in the text label
@@ -70,7 +70,7 @@ export function generatePercentageSvg(pct: number, label: string, diffStr?: stri
             <text x="72" y="${mainY}" font-family="sans-serif" font-size="34" font-weight="bold" fill="#fff" text-anchor="middle">${pct}%</text>
             ${diffEl}
             <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
-            <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="2">CLAUDE</text>
+            <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="2">${topLabel}</text>
         </svg>
     `);
 }

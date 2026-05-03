@@ -2,7 +2,7 @@
 
 ![Screenshot](images/screenshot.png)
 
-A Stream Deck plugin to monitor coding-tool quotas and credit balances directly from your Elgato Stream Deck. Supports GitHub Copilot, Anthropic Claude (usage and credits), Antigravity AI, and OpenAI.
+A Stream Deck plugin to monitor coding-tool quotas and credit balances directly from your Elgato Stream Deck. Supports GitHub Copilot, Anthropic Claude (usage and credits), Antigravity AI, OpenAI, DeepSeek, FAL.AI, and OpenCode Go.
 
 ## Features
 
@@ -13,6 +13,7 @@ A Stream Deck plugin to monitor coding-tool quotas and credit balances directly 
 *   **OpenAI Credits:** Displays your remaining OpenAI credit balance using the undocumented billing endpoint.
 *   **DeepSeek Balance:** Displays your remaining DeepSeek API credit balance.
 *   **FAL.AI Balance:** Displays your remaining FAL.AI credit balance.
+*   **OpenCode Go Quota:** Displays your OpenCode Go usage quota percentage (rolling ~5h, weekly, or monthly windows).
 
 ## Installation
 
@@ -106,6 +107,24 @@ Displays your remaining DeepSeek API credit balance.
 Displays your remaining FAL.AI credit balance.
 
 *   **Admin API Key:** Your FAL.AI Admin API key. Create one at [fal.ai/dashboard/keys](https://fal.ai/dashboard/keys).
+
+### OpenCode Go Quota
+
+Displays your OpenCode Go usage quota by scraping the workspace dashboard.
+
+> **Note:** This integration scrapes the OpenCode Go dashboard HTML and parses SolidJS SSR hydration output. It may break if the dashboard markup changes.
+
+*   **Workspace ID:** Your OpenCode Go workspace ID.
+*   **Auth Cookie:** The `auth` cookie value from an authenticated [opencode.ai](https://opencode.ai) browser session.
+    *   Open DevTools → Application → Cookies on `opencode.ai`.
+    *   Copy the value of the `auth` cookie.
+    *   The cookie expires after a while; refresh it from your browser if the button stops working.
+*   **Window:** Select the usage window to monitor:
+    *   `Rolling` (~5 hours)
+    *   `Weekly`
+    *   `Monthly`
+
+The button displays the remaining percentage (e.g. `81%`) with a colour-coded ring gauge.
 
 ## Security & Secret Storage
 

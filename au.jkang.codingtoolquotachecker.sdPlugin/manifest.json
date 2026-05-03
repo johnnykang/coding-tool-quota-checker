@@ -122,6 +122,22 @@
             ]
         },
         {
+            "Name": "OpenCode Go Quota",
+            "UUID": "au.jkang.codingtoolquotachecker.opencodego",
+            "Icon": "imgs/opencodego-action",
+            "Tooltip": "Displays OpenCode Go usage quota",
+            "PropertyInspectorPath": "pi-opencode-go.html",
+            "States": [
+                {
+                    "Image": "imgs/opencodego-provider",
+                    "TitleAlignment": "middle"
+                }
+            ],
+            "Controllers": [
+                "Keypad"
+            ]
+        },
+        {
             "Name": "Refresh Timer",
             "UUID": "au.jkang.codingtoolquotachecker.countdown",
             "Icon": "imgs/refresh-action",

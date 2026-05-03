@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>OpenCode Go Quota Settings</title>
+    <style>
+        body { font-family: sans-serif; font-size: 10pt; color: white; background-color: transparent; }
+        .wrap { padding: 10px; box-sizing: border-box; }
+        .row { margin-bottom: 8px; }
+        label { display: block; margin-bottom: 2px; color: #ccc; }
+        input[type="password"],
+        input[type="text"],
+        select { width: 100%; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; padding: 3px 5px; border-radius: 3px; }
+        #saveButton { margin-top: 10px; width: 100%; padding: 5px; cursor: pointer; background: #4d6bfe; border: none; color: white; border-radius: 3px; }
+        #saveButton:hover { background: #3a51d4; }
+        #status { font-size: 9pt; color: #88cc88; height: 1.2em; }
+        .hint { font-size: 8pt; color: #888; margin-top: 2px; }
+        a { color: #4d6bfe; }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="row">
+            <div id="displayValue" style="background: #222; padding: 8px; border-radius: 3px; border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; margin-bottom: 10px;">Waiting for data...</div>
+        </div>
+        <div class="row">
+            <label for="workspaceId">Workspace ID:</label>
+            <input type="text" id="workspaceId" placeholder="your-workspace-id" />
+            <p class="hint">Your OpenCode Go workspace ID.</p>
+        </div>
+        <div class="row">
+            <label for="authCookie">Auth Cookie:</label>
+            <input type="password" id="authCookie" placeholder="auth cookie from opencode.ai" />
+            <p class="hint">The <code>auth</code> cookie value from <a href="https://opencode.ai" target="_blank">opencode.ai</a>.</p>
+        </div>
+        <div class="row">
+            <label for="window">Window:</label>
+            <select id="window">
+                <option value="rolling">Rolling (~5h)</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
+        <div class="row">
+            <button id="saveButton">Save Settings</button>
+        </div>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        let websocket = null;
+        let pluginUUID = null;
+        let actionInfo = {};
+
+        window.connectElgatoStreamDeckSocket = function (inPort, inPluginUUID, inRegisterEvent, inInfo, inActionInfo) {
+            pluginUUID = inPluginUUID;
+            actionInfo = JSON.parse(inActionInfo);
+
+            websocket = new WebSocket('ws://127.0.0.1:' + inPort);
+
+            websocket.onopen = function () {
+                websocket.send(JSON.stringify({ "event": inRegisterEvent, "uuid": pluginUUID }));
+                websocket.send(JSON.stringify({ "event": "getSettings", "context": pluginUUID }));
+                websocket.send(JSON.stringify({
+                    "event": "sendToPlugin",
+                    "action": actionInfo.action,
+                    "context": pluginUUID,
+                    "payload": { "type": "getSecretStatus", "keys": ["opencodego.authCookie"] }
+                }));
+            };
+
+            websocket.onmessage = function (evt) {
+                const jsonObj = JSON.parse(evt.data);
+                if (jsonObj.event === 'didReceiveSettings') {
+                    const s = jsonObj.payload.settings;
+                    if (s.workspaceId) document.getElementById('workspaceId').value = s.workspaceId;
+                    if (s.window) document.getElementById('window').value = s.window;
+                } else if (jsonObj.event === 'sendToPropertyInspector') {
+                    const p = jsonObj.payload;
+                    if (p && p.type === 'secretStatus') {
+                        const field = document.getElementById('authCookie');
+                        field.placeholder = p.status['opencodego.authCookie']
+                            ? '(saved \u2014 leave blank to keep)'
+                            : 'auth cookie...';
+                    } else if (p && p.type === 'updateDisplay') {
+                        document.getElementById('displayValue').innerText = p.value;
+                    }
+                }
+            };
+
+            document.getElementById('saveButton').addEventListener('click', function () {
+                const cookieVal = document.getElementById('authCookie').value.trim();
+                if (cookieVal) {
+                    websocket.send(JSON.stringify({
+                        "event": "sendToPlugin",
+                        "action": actionInfo.action,
+                        "context": pluginUUID,
+                        "payload": { "type": "saveSecret", "key": "opencodego.authCookie", "value": cookieVal }
+                    }));
+                    const field = document.getElementById('authCookie');
+                    field.value = '';
+                    field.placeholder = '(saved \u2014 leave blank to keep)';
+                }
+                websocket.send(JSON.stringify({
+                    "event": "setSettings",
+                    "context": pluginUUID,
+                    "payload": {
+                        workspaceId: document.getElementById('workspaceId').value.trim(),
+                        window: document.getElementById('window').value
+                    }
+                }));
+                const status = document.getElementById('status');
+                status.innerText = 'Saved!';
+                setTimeout(() => status.innerText = '', 2000);
+            });
+        };
+    </script>
+
+</body>
+
+</html>

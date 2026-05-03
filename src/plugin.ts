@@ -8,6 +8,7 @@ import { AntigravityProvider, AntigravitySettings } from "./providers/antigravit
 import { OpenAiCreditsProvider, OpenAiCreditsSettings } from "./providers/openai-credits";
 import { DeepSeekProvider, DeepSeekSettings } from "./providers/deepseek";
 import { FalCreditsProvider, FalCreditsSettings } from "./providers/fal-credits";
+import { OpenCodeGoProvider, OpenCodeGoSettings } from "./providers/opencode-go";
 import { encryptDpapi, isDpapiEncrypted } from "./dpapi";
 import { generateCountdownSvg, generateMessageSvg } from "./svg";
 
@@ -22,6 +23,7 @@ const ANTIGRAVITY_ACTION_UUID     = "au.jkang.codingtoolquotachecker.antigravity
 const OPENAI_CREDITS_ACTION_UUID  = "au.jkang.codingtoolquotachecker.openaicredits";
 const DEEPSEEK_ACTION_UUID        = "au.jkang.codingtoolquotachecker.deepseek";
 const FAL_ACTION_UUID             = "au.jkang.codingtoolquotachecker.fal";
+const OPENCODE_GO_ACTION_UUID     = "au.jkang.codingtoolquotachecker.opencodego";
 const COUNTDOWN_ACTION_UUID       = "au.jkang.codingtoolquotachecker.countdown";
 
 // ─── PI display state ─────────────────────────────────────────────────────────
@@ -59,9 +61,10 @@ const providers = {
     [OPENAI_CREDITS_ACTION_UUID]: new OpenAiCreditsProvider(updatePiDisplay),
     [DEEPSEEK_ACTION_UUID]:       new DeepSeekProvider(updatePiDisplay),
     [FAL_ACTION_UUID]:            new FalCreditsProvider(updatePiDisplay),
+    [OPENCODE_GO_ACTION_UUID]:    new OpenCodeGoProvider(updatePiDisplay),
 };
 
-type AllSettings = CopilotSettings | ClaudeUsageSettings | ClaudeCreditsSettings | AntigravitySettings | OpenAiCreditsSettings | DeepSeekSettings | FalCreditsSettings;
+type AllSettings = CopilotSettings | ClaudeUsageSettings | ClaudeCreditsSettings | AntigravitySettings | OpenAiCreditsSettings | DeepSeekSettings | FalCreditsSettings | OpenCodeGoSettings;
 
 function getRunner(action: KeyAction<any>): (() => Promise<void>) | null {
     const provider = providers[action.manifestId as keyof typeof providers];
