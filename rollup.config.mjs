@@ -13,7 +13,7 @@ export default {
 	input: "src/plugin.ts",
 	output: {
 		file: "au.jkang.codingtoolquotachecker.sdPlugin/bin/plugin.js",
-		format: "es",
+		format: "esm",
 		sourcemap: isWatching,
 		sourcemapPathTransform: (relativeSourcePath, sourcemapPath) => {
 			return path.resolve(path.dirname(sourcemapPath), relativeSourcePath);
