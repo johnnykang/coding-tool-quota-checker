@@ -1,6 +1,6 @@
 {
   "name": "coding-tool-quota-checker",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Stream Deck Plugin to check Copilot interactions quota",
   "type": "module",
   "scripts": {
