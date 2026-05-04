@@ -153,13 +153,13 @@ export class OpenCodeGoProvider implements IQuotaProvider<OpenCodeGoSettings> {
             }
 
             const usagePercent = Math.max(0, usage.usagePercent);
-            const percentRemaining = Math.round(100 - usagePercent);
+            const percentUsed = Math.round(usagePercent);
             const label = WINDOW_LABELS[window] ?? window.toUpperCase();
 
-            const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, percentRemaining, { suffix: "%" });
+            const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, percentUsed, { suffix: "%" });
 
-            await action.setImage(generatePercentageSvg(percentRemaining, label, diffStr, diffColor, "OC GO"));
-            this.updatePiDisplay(action, `${percentRemaining}% / 100%`);
+            await action.setImage(generatePercentageSvg(percentUsed, label, diffStr, diffColor, "OC GO"));
+            this.updatePiDisplay(action, `${percentUsed}% / 100%`);
 
         } catch (e) {
             streamDeck.logger.error("Failed to fetch OpenCode Go quota: " + e);

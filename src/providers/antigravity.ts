@@ -77,7 +77,7 @@ async function fetchUserStatus(port: number, csrfToken: string): Promise<any> {
                 }
                 try {
                     resolve(JSON.parse(data));
-                } catch(e) {
+                } catch (e) {
                     reject(e);
                 }
             });
@@ -94,7 +94,7 @@ async function fetchUserStatus(port: number, csrfToken: string): Promise<any> {
 export class AntigravityProvider implements IQuotaProvider<AntigravitySettings> {
     private readonly diffTracker = new DiffTracker();
 
-    constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
+    constructor(private readonly updatePiDisplay: PiDisplayUpdater) { }
 
     async check(action: KeyAction<AntigravitySettings>): Promise<void> {
         const settings = await action.getSettings();
@@ -202,16 +202,20 @@ export class AntigravityProvider implements IQuotaProvider<AntigravitySettings> 
             }
 
             const remainingFraction = targetModel.quotaInfo.remainingFraction;
-            const remainingPercentage = remainingFraction !== undefined ? Math.round(remainingFraction * 100) : 0;
+            let usagePercentage = remainingFraction !== undefined ? Math.round((1 - remainingFraction) * 100) : 100;
+
+            if (targetModel.quotaInfo.isExhausted) {
+                usagePercentage = 100;
+            }
 
             const labelStr = targetModel.label || "MODL";
             // Extract a 4-letter acronym or first 4 chars
             const shortLabel = labelStr.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase();
 
-            const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, remainingPercentage, { suffix: "%" });
+            const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, usagePercentage, { suffix: "%" });
 
-            await action.setImage(generatePercentageSvg(remainingPercentage, shortLabel, diffStr, diffColor));
-            this.updatePiDisplay(action, `${remainingPercentage}% / 100%`);
+            await action.setImage(generatePercentageSvg(usagePercentage, shortLabel, diffStr, diffColor));
+            this.updatePiDisplay(action, `${usagePercentage}% / 100%`);
 
         } catch (e) {
             streamDeck.logger.error("Failed to check Antigravity Quota: " + e);
