@@ -1,0 +1,50 @@
+name: Publish to Gitea Package Registry
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Build Plugin
+        run: npm run build
+
+      - name: Validate Plugin
+        run: npm run validate
+
+      - name: Pack Plugin
+        run: npm run pack
+
+      - name: Resolve version
+        id: version
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish to Gitea Generic Package Registry
+        env:
+          GITEA_URL: ${{ var.GITEA_URL }}
+          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
+          GITEA_OWNER: ${{ var.GITEA_OWNER }}
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          curl --fail-with-body \
+            --request PUT \
+            --header "Authorization: token ${GITEA_TOKEN}" \
+            --upload-file au.jkang.codingtoolquotachecker.streamDeckPlugin \
+            "${GITEA_URL}/api/packages/${GITEA_OWNER}/generic/au.jkang.codingtoolquotachecker/${VERSION}/au.jkang.codingtoolquotachecker.streamDeckPlugin"
