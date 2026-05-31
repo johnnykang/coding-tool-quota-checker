@@ -38,13 +38,13 @@ jobs:
 
       - name: Publish to Gitea Generic Package Registry
         env:
-          GITEA_URL: ${{ var.GITEA_URL }}
-          GITEA_TOKEN: ${{ secrets.GITEA_TOKEN }}
-          GITEA_OWNER: ${{ var.GITEA_OWNER }}
+          GITEA_URL: ${{ github.server_url }}
+          REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
+          GITEA_OWNER: johnnykang
           VERSION: ${{ steps.version.outputs.value }}
         run: |
           curl --fail-with-body \
             --request PUT \
-            --header "Authorization: token ${GITEA_TOKEN}" \
+            --header "Authorization: token ${REGISTRY_TOKEN}" \
             --upload-file au.jkang.codingtoolquotachecker.streamDeckPlugin \
             "${GITEA_URL}/api/packages/${GITEA_OWNER}/generic/au.jkang.codingtoolquotachecker/${VERSION}/au.jkang.codingtoolquotachecker.streamDeckPlugin"
