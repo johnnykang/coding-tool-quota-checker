@@ -126,6 +126,19 @@ Displays your OpenCode Go usage quota by scraping the workspace dashboard.
 
 The button displays the remaining percentage (e.g. `81%`) with a colour-coded ring gauge.
 
+## Development
+
+### Versioning & Releases
+
+This project uses a synchronization script to keep the Stream Deck `manifest.json` in sync with the `package.json` version.
+
+To release a new version:
+1.  Run `npm version <patch|minor|major>` to bump the version (e.g., `npm version patch`). This updates `package.json`, synchronises `manifest.json`, stages the changes, and creates a git tag.
+2.  Push the changes and the tag: `git push origin main --tags`.
+3.  The GitHub and Gitea workflows will automatically build and publish the plugin.
+
+The `manifest.json` version is also automatically synchronised during the build process in CI as a safety measure.
+
 ## Security & Secret Storage
 
 All API keys and session tokens entered in the Property Inspector are stored in Elgato's `globalSettings` store, which is **not** included in Stream Deck profile exports or backups.

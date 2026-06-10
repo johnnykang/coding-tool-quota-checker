@@ -7,7 +7,9 @@
     "build": "rollup -c",
     "watch": "rollup -c -w",
     "validate": "streamdeck validate au.jkang.codingtoolquotachecker.sdPlugin",
-    "pack": "streamdeck pack au.jkang.codingtoolquotachecker.sdPlugin"
+    "pack": "streamdeck pack au.jkang.codingtoolquotachecker.sdPlugin",
+    "sync-version": "node scripts/sync-version.mjs",
+    "version": "npm run sync-version && git add au.jkang.codingtoolquotachecker.sdPlugin/manifest.json"
   },
   "dependencies": {
     "@elgato/streamdeck": "^2.1.0"

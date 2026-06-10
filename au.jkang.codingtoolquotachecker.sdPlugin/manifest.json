@@ -2,7 +2,7 @@
     "$schema": "https://schemas.elgato.com/streamdeck/plugins/manifest.json",
     "UUID": "au.jkang.codingtoolquotachecker",
     "Name": "AI Quota",
-    "Version": "1.1.0.0",
+    "Version": "1.1.0",
     "Author": "Johnny Kang",
     "Description": "Checks GitHub Copilot remaining premium requests and Claude Code usage.",
     "Icon": "imgs/plugin-icon",
