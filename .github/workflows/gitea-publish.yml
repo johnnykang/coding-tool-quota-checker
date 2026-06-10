@@ -43,7 +43,7 @@ jobs:
         env:
           GITEA_URL: ${{ github.server_url }}
           REGISTRY_TOKEN: ${{ secrets.REGISTRY_TOKEN }}
-          GITEA_OWNER: johnnykang
+          GITEA_OWNER: ${{ github.repository_owner }}
           VERSION: ${{ steps.version.outputs.value }}
         run: |
           curl --fail-with-body \

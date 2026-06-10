@@ -50,4 +50,4 @@ jobs:
           files: au.jkang.codingtoolquotachecker.streamDeckPlugin
           draft: false
           prerelease: false
-          generate_release_notes: true
+          generate_release_notes: ${{ github.server_url == 'https://github.com' }}
