@@ -13,14 +13,17 @@ try {
     const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
     const manifestJson = JSON.parse(fs.readFileSync(manifestJsonPath, 'utf-8'));
 
-    const newVersion = packageJson.version;
+    const packageVersion = packageJson.version;
+    // Stream Deck manifest requires 4 digits: major.minor.patch.build
+    // We append .0 to the semver version from package.json
+    const manifestVersion = `${packageVersion}.0`;
     const oldVersion = manifestJson.Version;
 
-    if (newVersion === oldVersion) {
-        console.log(`Versions are already in sync: ${newVersion}`);
+    if (manifestVersion === oldVersion) {
+        console.log(`Versions are already in sync: ${manifestVersion}`);
     } else {
-        console.log(`Syncing version: ${oldVersion} -> ${newVersion}`);
-        manifestJson.Version = newVersion;
+        console.log(`Syncing version: ${oldVersion} -> ${manifestVersion}`);
+        manifestJson.Version = manifestVersion;
         fs.writeFileSync(manifestJsonPath, JSON.stringify(manifestJson, null, 4) + '\n');
         console.log('Successfully updated manifest.json');
     }
