@@ -74,6 +74,22 @@
             ]
         },
         {
+            "Name": "AGY Quota",
+            "UUID": "au.jkang.codingtoolquotachecker.agy",
+            "Icon": "imgs/agy-action",
+            "Tooltip": "Displays AGY CLI quota from local cache",
+            "PropertyInspectorPath": "pi-agy-quota.html",
+            "States": [
+                {
+                    "Image": "imgs/agy-provider",
+                    "TitleAlignment": "middle"
+                }
+            ],
+            "Controllers": [
+                "Keypad"
+            ]
+        },
+        {
             "Name": "OpenAI Credits",
             "UUID": "au.jkang.codingtoolquotachecker.openaicredits",
             "Icon": "imgs/openai-action",

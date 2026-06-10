@@ -1,6 +1,7 @@
 import streamDeck from "@elgato/streamdeck";
 
 import {
+	AgyQuotaAction,
 	AntigravityAction,
 	ClaudeCreditsAction,
 	ClaudeUsageAction,
@@ -22,6 +23,7 @@ streamDeck.actions.registerAction(new CopilotAction());
 streamDeck.actions.registerAction(new ClaudeUsageAction());
 streamDeck.actions.registerAction(new ClaudeCreditsAction());
 streamDeck.actions.registerAction(new AntigravityAction());
+streamDeck.actions.registerAction(new AgyQuotaAction());
 streamDeck.actions.registerAction(new OpenAiCreditsAction());
 streamDeck.actions.registerAction(new DeepSeekAction());
 streamDeck.actions.registerAction(new FalCreditsAction());

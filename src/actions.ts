@@ -2,6 +2,7 @@ import streamDeck, { action, KeyDownEvent, KeyAction, SingletonAction, WillAppea
 import { JsonObject } from "@elgato/utils";
 
 import { PiDisplayUpdater } from "./providers/types";
+import { AgyQuotaProvider, AgyQuotaSettings } from "./providers/agy-quota";
 import { AntigravityProvider, AntigravitySettings } from "./providers/antigravity";
 import { ClaudeCreditsProvider, ClaudeCreditsSettings } from "./providers/claude-credits";
 import { ClaudeUsageProvider, ClaudeUsageSettings } from "./providers/claude-usage";
@@ -123,6 +124,11 @@ export class ClaudeCreditsAction extends QuotaAction<ClaudeCreditsSettings> {
 @action({ UUID: "au.jkang.codingtoolquotachecker.antigravity" })
 export class AntigravityAction extends QuotaAction<AntigravitySettings> {
 	constructor() { super(new AntigravityProvider(updatePiDisplay)); }
+}
+
+@action({ UUID: "au.jkang.codingtoolquotachecker.agy" })
+export class AgyQuotaAction extends QuotaAction<AgyQuotaSettings> {
+	constructor() { super(new AgyQuotaProvider(updatePiDisplay)); }
 }
 
 @action({ UUID: "au.jkang.codingtoolquotachecker.openaicredits" })
