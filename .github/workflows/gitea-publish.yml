@@ -5,6 +5,11 @@ on:
     tags:
       - 'v*'
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag value for manual release (e.g., v1.0.1)'
+        required: false
+        type: string
 
 jobs:
   build-and-publish:
@@ -37,7 +42,9 @@ jobs:
 
       - name: Resolve version
         id: version
-        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "value=${TAG#v}" >> "$GITHUB_OUTPUT"
 
       - name: Publish to Gitea Generic Package Registry
         env:
