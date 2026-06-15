@@ -28,6 +28,14 @@
             <p class="hint">Leave blank to show the most critical (lowest) quota across all models.</p>
         </div>
         <div class="row">
+            <label for="displayMode">Display Mode:</label>
+            <select id="displayMode" style="width: 100%; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; padding: 3px 5px; border-radius: 3px;">
+                <option value="quota">Quota Percentage</option>
+                <option value="aiCredits">AI Credits</option>
+            </select>
+            <p class="hint">Select what to display on the button.</p>
+        </div>
+        <div class="row">
             <button id="saveButton">Save Settings</button>
         </div>
         <p id="status"></p>
@@ -62,6 +70,7 @@
                 if (jsonObj.event === 'didReceiveSettings') {
                     const s = jsonObj.payload.settings;
                     if (s.modelLabel) document.getElementById('modelLabel').value = s.modelLabel;
+                    if (s.displayMode) document.getElementById('displayMode').value = s.displayMode;
                 } else if (jsonObj.event === 'sendToPropertyInspector') {
                     if (jsonObj.payload && jsonObj.payload.type === 'updateDisplay') {
                         document.getElementById('displayValue').innerText = jsonObj.payload.value;
@@ -71,7 +80,8 @@
 
             document.getElementById('saveButton').addEventListener('click', function () {
                 const payload = {
-                    modelLabel: document.getElementById('modelLabel').value
+                    modelLabel: document.getElementById('modelLabel').value,
+                    displayMode: document.getElementById('displayMode').value
                 };
                 websocket.send(JSON.stringify({
                     "event": "setSettings",

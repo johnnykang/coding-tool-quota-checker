@@ -3,12 +3,13 @@ import streamDeck from "@elgato/streamdeck";
 import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 import os from "os";
-import { generateLoadingSvg, generateMessageSvg, generatePercentageSvg } from "../svg";
+import { generateLoadingSvg, generateMessageSvg, generatePercentageSvg, generateCountSvg } from "../svg";
 import { IQuotaProvider, PiDisplayUpdater } from "./types";
 import { DiffTracker } from "./diff-tracker";
 
 export type AgyQuotaSettings = {
     modelLabel?: string;
+    displayMode?: string;
 };
 
 interface QuotaCache {
@@ -17,11 +18,12 @@ interface QuotaCache {
         remaining_percentage: number;
         reset_time?: string;
         refreshes_in?: string;
+        aiCredits?: number | string;
     }>;
     updatedAt?: number;
     email?: string;
     planTier?: string;
-    aiCredits?: string;
+    aiCredits?: number | string;
     planStatus?: Record<string, any>;
 }
 
@@ -112,19 +114,29 @@ export class AgyQuotaProvider implements IQuotaProvider<AgyQuotaSettings> {
                 return;
             }
 
-            const remainingPercentage = Math.round(targetModel.remaining_percentage);
-            const usagePercentage = 100 - remainingPercentage;
-
-            // Use a short label for the model
             const labelStr = targetModel.name || "AGY";
             const shortLabel = labelStr.replace(/[^a-zA-Z0-9]/g, '').substring(0, 4).toUpperCase();
 
-            const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, usagePercentage, { suffix: "%" });
+            if (settings.displayMode === "aiCredits") {
+                let credits = 0;
+                if (targetModel.aiCredits !== undefined) {
+                    credits = Number(targetModel.aiCredits);
+                } else if (cache.aiCredits !== undefined) {
+                    credits = Number(cache.aiCredits);
+                }
+                const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, credits, { prefix: "" });
+                await action.setImage(generateCountSvg(credits, 0, "CREDITS", diffStr, diffColor, shortLabel));
+                this.updatePiDisplay(action, `${credits} Credits`);
+                streamDeck.logger.info(`AGY quota: credits = ${credits}, plan: ${cache.planTier || 'unknown'}, email: ${cache.email || 'unknown'}`);
+            } else {
+                const remainingPercentage = Math.round(targetModel.remaining_percentage);
+                const usagePercentage = 100 - remainingPercentage;
+                const { diffStr, diffColor } = this.diffTracker.getDiff(action.id, usagePercentage, { suffix: "%" });
 
-            await action.setImage(generatePercentageSvg(usagePercentage, shortLabel, diffStr, diffColor, "AGY"));
-            this.updatePiDisplay(action, `${usagePercentage}% used / ${remainingPercentage}% remaining`);
-
-            streamDeck.logger.info(`AGY quota: ${labelStr} = ${remainingPercentage}% remaining, plan: ${cache.planTier || 'unknown'}, email: ${cache.email || 'unknown'}`);
+                await action.setImage(generatePercentageSvg(usagePercentage, shortLabel, diffStr, diffColor, "AGY"));
+                this.updatePiDisplay(action, `${usagePercentage}% used / ${remainingPercentage}% remaining`);
+                streamDeck.logger.info(`AGY quota: ${labelStr} = ${remainingPercentage}% remaining, plan: ${cache.planTier || 'unknown'}, email: ${cache.email || 'unknown'}`);
+            }
 
         } catch (e) {
             streamDeck.logger.error("Failed to check AGY Quota: " + e);

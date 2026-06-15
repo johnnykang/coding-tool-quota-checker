@@ -75,7 +75,7 @@ export function generatePercentageSvg(pct: number, label: string, diffStr?: stri
     `);
 }
 
-export function generateCountSvg(count: number, limit: number, label: string = "LEFT", diffStr?: string, diffColor?: string): string {
+export function generateCountSvg(count: number, limit: number, label: string = "LEFT", diffStr?: string, diffColor?: string, topLabel: string = "COPILOT"): string {
     const percentage = limit > 0 ? Math.max(0, Math.min(100, (count / limit) * 100)) : 0;
     const r = 48;
     const c = 2 * Math.PI * r;
@@ -83,8 +83,8 @@ export function generateCountSvg(count: number, limit: number, label: string = "
     const gap = c;
 
     let color = "#3b82f6"; // Blue
-    if (percentage <= 10) color = "#ef4444"; // Red (Critical)
-    else if (percentage <= 30) color = "#f59e0b"; // Amber (Warning)
+    if (percentage <= 10 && limit > 0) color = "#ef4444"; // Red (Critical)
+    else if (percentage <= 30 && limit > 0) color = "#f59e0b"; // Amber (Warning)
 
     const mainY = diffStr ? 76 : 86;
     const mainSize = diffStr ? 38 : 44;
@@ -100,7 +100,7 @@ export function generateCountSvg(count: number, limit: number, label: string = "
             <text x="72" y="${mainY}" font-family="sans-serif" font-size="${mainSize}" font-weight="bold" fill="#fff" text-anchor="middle">${count}</text>
             ${diffEl}
             <text x="72" y="132" font-family="sans-serif" font-size="14" font-weight="600" fill="#888" text-anchor="middle">${label}</text>
-            <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">COPILOT</text>
+            <text x="72" y="24" font-family="sans-serif" font-size="12" font-weight="600" fill="#ccc" text-anchor="middle" letter-spacing="1.5">${topLabel}</text>
         </svg>
     `);
 }
