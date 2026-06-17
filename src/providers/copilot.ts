@@ -15,8 +15,12 @@ export class CopilotProvider implements IQuotaProvider<CopilotSettings> {
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<CopilotSettings>): Promise<void> {
-        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
-        const token = await resolveSecret(globalSettings["copilot.authToken"]);
+        const settings = await action.getSettings();
+        let token = await resolveSecret(settings.authToken);
+        if (!token) {
+            const global = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+            token = await resolveSecret(global["copilot.authToken"]);
+        }
 
         if (!token) {
             await action.setImage(generateMessageSvg("No", "Token"));

@@ -52,7 +52,7 @@
                     "event": "sendToPlugin",
                     "action": actionInfo.action,
                     "context": pluginUUID,
-                    "payload": { "type": "getSecretStatus", "keys": ["openai.sessionToken"] }
+                    "payload": { "type": "getSecretStatus", "keys": ["sessionToken"] }
                 }));
             };
 
@@ -62,7 +62,7 @@
                     const p = jsonObj.payload;
                     if (p && p.type === 'secretStatus') {
                         const field = document.getElementById('sessionToken');
-                        field.placeholder = p.status['openai.sessionToken']
+                        field.placeholder = p.status['sessionToken']
                             ? '(saved \u2014 leave blank to keep)'
                             : 'sess-\u2026';
                     } else if (p && p.type === 'updateDisplay') {
@@ -78,7 +78,7 @@
                         "event": "sendToPlugin",
                         "action": actionInfo.action,
                         "context": pluginUUID,
-                        "payload": { "type": "saveSecret", "key": "openai.sessionToken", "value": val }
+                        "payload": { "type": "saveSecret", "key": "sessionToken", "value": val }
                     }));
                     const field = document.getElementById('sessionToken');
                     field.value = '';

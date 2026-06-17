@@ -67,7 +67,7 @@
                     "event": "sendToPlugin",
                     "action": actionInfo.action,
                     "context": pluginUUID,
-                    "payload": { "type": "getSecretStatus", "keys": ["opencodego.authCookie"] }
+                    "payload": { "type": "getSecretStatus", "keys": ["authCookie"] }
                 }));
             };
 
@@ -81,7 +81,7 @@
                     const p = jsonObj.payload;
                     if (p && p.type === 'secretStatus') {
                         const field = document.getElementById('authCookie');
-                        field.placeholder = p.status['opencodego.authCookie']
+                        field.placeholder = p.status['authCookie']
                             ? '(saved \u2014 leave blank to keep)'
                             : 'auth cookie...';
                     } else if (p && p.type === 'updateDisplay') {
@@ -97,7 +97,7 @@
                         "event": "sendToPlugin",
                         "action": actionInfo.action,
                         "context": pluginUUID,
-                        "payload": { "type": "saveSecret", "key": "opencodego.authCookie", "value": cookieVal }
+                        "payload": { "type": "saveSecret", "key": "authCookie", "value": cookieVal }
                     }));
                     const field = document.getElementById('authCookie');
                     field.value = '';

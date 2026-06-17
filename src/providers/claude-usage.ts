@@ -61,8 +61,11 @@ export class ClaudeUsageProvider implements IQuotaProvider<ClaudeUsageSettings> 
     async check(action: KeyAction<ClaudeUsageSettings>): Promise<void> {
         const settings = await action.getSettings();
         const { organizationId, usagePeriod = "5-hour" } = settings;
-        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
-        const sessionKey = await resolveSecret(globalSettings["claude.sessionKey"]);
+        let sessionKey = await resolveSecret(settings.sessionKey);
+        if (!sessionKey) {
+            const global = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+            sessionKey = await resolveSecret(global["claude.sessionKey"]);
+        }
 
         if (!sessionKey || !organizationId) {
             await action.setImage(generateMessageSvg("No", "Creds"));

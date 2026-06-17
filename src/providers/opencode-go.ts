@@ -8,6 +8,7 @@ import { resolveSecret } from "../dpapi";
 export type OpenCodeGoSettings = {
     workspaceId?: string;
     window?: "rolling" | "weekly" | "monthly";
+    authCookie?: string;
 };
 
 const DASHBOARD_URL_PREFIX = "https://opencode.ai/workspace/";
@@ -90,8 +91,11 @@ export class OpenCodeGoProvider implements IQuotaProvider<OpenCodeGoSettings> {
         const workspaceId = settings.workspaceId?.trim();
         const window = settings.window ?? "rolling";
 
-        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
-        const authCookie = await resolveSecret(globalSettings["opencodego.authCookie"]);
+        let authCookie = await resolveSecret(settings.authCookie);
+        if (!authCookie) {
+            const global = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+            authCookie = await resolveSecret(global["opencodego.authCookie"]);
+        }
 
         if (!workspaceId) {
             await action.setImage(generateMessageSvg("No", "ID"));

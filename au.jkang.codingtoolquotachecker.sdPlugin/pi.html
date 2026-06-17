@@ -47,7 +47,7 @@
                     "event": "sendToPlugin",
                     "action": actionInfo.action,
                     "context": pluginUUID,
-                    "payload": { "type": "getSecretStatus", "keys": ["copilot.authToken"] }
+                    "payload": { "type": "getSecretStatus", "keys": ["authToken"] }
                 }));
             };
 
@@ -57,7 +57,7 @@
                     const p = jsonObj.payload;
                     if (p && p.type === 'secretStatus') {
                         const field = document.getElementById('authToken');
-                        field.placeholder = p.status['copilot.authToken']
+                        field.placeholder = p.status['authToken']
                             ? '(saved \u2014 leave blank to keep)'
                             : 'ghu_\u2026';
                     } else if (p && p.type === 'updateDisplay') {
@@ -74,7 +74,7 @@
                         "event": "sendToPlugin",
                         "action": actionInfo.action,
                         "context": pluginUUID,
-                        "payload": { "type": "saveSecret", "key": "copilot.authToken", "value": val }
+                        "payload": { "type": "saveSecret", "key": "authToken", "value": val }
                     }));
                     // Update placeholder to reflect saved state.
                     const field = document.getElementById('authToken');

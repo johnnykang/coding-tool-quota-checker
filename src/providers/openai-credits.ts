@@ -23,8 +23,12 @@ export class OpenAiCreditsProvider implements IQuotaProvider<OpenAiCreditsSettin
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<OpenAiCreditsSettings>): Promise<void> {
-        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
-        const sessionToken = await resolveSecret(globalSettings["openai.sessionToken"]);
+        const settings = await action.getSettings();
+        let sessionToken = await resolveSecret(settings.sessionToken);
+        if (!sessionToken) {
+            const global = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+            sessionToken = await resolveSecret(global["openai.sessionToken"]);
+        }
 
         if (!sessionToken) {
             await action.setImage(generateMessageSvg("No", "Token"));

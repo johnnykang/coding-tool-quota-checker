@@ -25,8 +25,11 @@ export class ClaudeCreditsProvider implements IQuotaProvider<ClaudeCreditsSettin
     async check(action: KeyAction<ClaudeCreditsSettings>): Promise<void> {
         const settings = await action.getSettings();
         const { organizationId } = settings;
-        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
-        const apiKey = await resolveSecret(globalSettings["claudeCredits.apiKey"]);
+        let apiKey = await resolveSecret(settings.apiKey);
+        if (!apiKey) {
+            const global = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+            apiKey = await resolveSecret(global["claudeCredits.apiKey"]);
+        }
 
         if (!apiKey || !organizationId) {
             await action.setImage(generateMessageSvg("No", "Creds"));

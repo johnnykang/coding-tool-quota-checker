@@ -64,17 +64,17 @@ streamDeck.ui.onSendToPlugin<SecretMessage>(async (ev) => {
 		} else {
 			stored = value; // macOS/Linux: store plaintext
 		}
-		const current = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
-		await streamDeck.settings.setGlobalSettings({ ...current, [key]: stored });
+		const current = await ev.action.getSettings<Record<string, string>>();
+		await ev.action.setSettings({ ...current, [key]: stored });
 		streamDeck.logger.info(`Secret saved for key '${key}'`);
 		return;
 	}
 
 	if (msg.type === "getSecretStatus") {
-		const globals = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+		const actionSettings = await ev.action.getSettings<Record<string, string>>();
 		const status: Record<string, boolean> = {};
 		for (const k of msg.keys) {
-			const val = globals[k] ?? "";
+			const val = actionSettings[k] ?? "";
 			status[k] = process.platform === "win32"
 				? isDpapiEncrypted(val)
 				: val.length > 0;

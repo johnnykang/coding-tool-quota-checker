@@ -52,7 +52,7 @@
                     "event": "sendToPlugin",
                     "action": actionInfo.action,
                     "context": pluginUUID,
-                    "payload": { "type": "getSecretStatus", "keys": ["deepseek.apiKey"] }
+                    "payload": { "type": "getSecretStatus", "keys": ["apiKey"] }
                 }));
             };
 
@@ -62,7 +62,7 @@
                     const p = jsonObj.payload;
                     if (p && p.type === 'secretStatus') {
                         const field = document.getElementById('apiKey');
-                        field.placeholder = p.status['deepseek.apiKey']
+                        field.placeholder = p.status['apiKey']
                             ? '(saved \u2014 leave blank to keep)'
                             : 'sk-\u2026';
                     } else if (p && p.type === 'updateDisplay') {
@@ -78,7 +78,7 @@
                         "event": "sendToPlugin",
                         "action": actionInfo.action,
                         "context": pluginUUID,
-                        "payload": { "type": "saveSecret", "key": "deepseek.apiKey", "value": val }
+                        "payload": { "type": "saveSecret", "key": "apiKey", "value": val }
                     }));
                     const field = document.getElementById('apiKey');
                     field.value = '';

@@ -70,7 +70,7 @@
                     "event": "sendToPlugin",
                     "action": actionInfo.action,
                     "context": pluginUUID,
-                    "payload": { "type": "getSecretStatus", "keys": ["claude.sessionKey"] }
+                    "payload": { "type": "getSecretStatus", "keys": ["sessionKey"] }
                 }));
             };
 
@@ -84,7 +84,7 @@
                     const p = jsonObj.payload;
                     if (p && p.type === 'secretStatus') {
                         const field = document.getElementById('sessionKey');
-                        field.placeholder = p.status['claude.sessionKey']
+                        field.placeholder = p.status['sessionKey']
                             ? '(saved \u2014 leave blank to keep)'
                             : 'sk-ant-sid01-\u2026';
                     } else if (p && p.type === 'updateDisplay') {
@@ -100,7 +100,7 @@
                         "event": "sendToPlugin",
                         "action": actionInfo.action,
                         "context": pluginUUID,
-                        "payload": { "type": "saveSecret", "key": "claude.sessionKey", "value": val }
+                        "payload": { "type": "saveSecret", "key": "sessionKey", "value": val }
                     }));
                     const field = document.getElementById('sessionKey');
                     field.value = '';

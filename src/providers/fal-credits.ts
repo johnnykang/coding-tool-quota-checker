@@ -23,8 +23,12 @@ export class FalCreditsProvider implements IQuotaProvider<FalCreditsSettings> {
     constructor(private readonly updatePiDisplay: PiDisplayUpdater) {}
 
     async check(action: KeyAction<FalCreditsSettings>): Promise<void> {
-        const globalSettings = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
-        const apiKey = await resolveSecret(globalSettings["fal.apiKey"]);
+        const settings = await action.getSettings();
+        let apiKey = await resolveSecret(settings.apiKey);
+        if (!apiKey) {
+            const global = await streamDeck.settings.getGlobalSettings<Record<string, string>>();
+            apiKey = await resolveSecret(global["fal.apiKey"]);
+        }
 
         if (!apiKey) {
             await action.setImage(generateMessageSvg("No", "Key"));
