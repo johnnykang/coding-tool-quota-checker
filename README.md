@@ -2,7 +2,7 @@
 
 ![Screenshot](images/screenshot.png)
 
-A Stream Deck plugin to monitor coding-tool quotas and credit balances directly from your Elgato Stream Deck. Supports GitHub Copilot, Anthropic Claude (usage and credits), Antigravity AI, OpenAI, DeepSeek, FAL.AI, and OpenCode Go.
+A Stream Deck plugin to monitor coding-tool quotas and credit balances directly from your Elgato Stream Deck. Supports GitHub Copilot, Anthropic Claude (usage and credits), Antigravity AI, AGY CLI, OpenAI, DeepSeek, FAL.AI, and OpenCode Go.
 
 ## Features
 
@@ -10,6 +10,7 @@ A Stream Deck plugin to monitor coding-tool quotas and credit balances directly 
 *   **Claude Code Usage:** Displays your Claude Code or claude.ai usage percentage based on different time windows and models.
 *   **Claude API Credits:** Displays your remaining prepaid credit balance from the Anthropic API platform.
 *   **Antigravity Quota:** Displays the remaining quota percentage for a model in the locally-running Antigravity language server (Windows only).
+*   **AGY Quota:** Displays usage for a selected quota group and window, or the AI credits balance, through the AGY CLI.
 *   **OpenAI Credits:** Displays your remaining OpenAI credit balance using the undocumented billing endpoint.
 *   **DeepSeek Balance:** Displays your remaining DeepSeek API credit balance.
 *   **FAL.AI Balance:** Displays your remaining FAL.AI credit balance.
@@ -83,6 +84,26 @@ The plugin logs all available models at `INFO` level on each poll. The following
 To target one of these, enter any unique substring of the label in the **Model Label** field (e.g. `opus`, `gemini 3 flash`, `120b`). Model availability varies by account and will change as Antigravity updates its offering.
 
 > **Note:** The Antigravity language server (`language_server_windows_x64.exe`) must be running for this action to return data. If the process is not found the button will show `No Proc`.
+
+### AGY Quota
+
+This action queries AGY directly. It requires AGY CLI 1.1.11 or later and an active sign-in under the Stream Deck user account.
+
+1. Install the [AGY CLI](https://github.com/google-antigravity/antigravity-cli).
+2. Run `agy` and sign in.
+3. Add the **AGY Quota** action to a button.
+4. Select a quota group and window, or select **AI Credits**.
+5. Select **Save Settings**.
+
+Quota choices come from your account. They include separate five-hour and weekly windows where available. Gemini 4 Argon can have a separate weekly quota. **Automatic** displays the highest usage across available windows. Existing model labels restrict automatic selection to their matching group until you save a new selection.
+
+The percentage shows quota used. For example, 80% remaining appears as 20% used. The settings panel also displays the reset time. Each button can select a different window.
+
+The plugin queries `agy -p /usage --output-format json` for quotas and `/credits` for AI credits. These queries consume no model quota. Refresh runs every five minutes or when you press the button. The action does not require a statusline hook or an external quota cache.
+
+On Windows, the plugin uses `%LOCALAPPDATA%\agy\bin\agy.exe` when present, then tries `agy.exe` through `PATH`. Other platforms require `agy` through `PATH`. AGY handles authentication. The plugin disables automatic CLI updates only for its own queries.
+
+If AGY cannot return the selected quota, the button displays an error or unavailable data. Sign in through `agy` again if authentication expires.
 
 ### OpenAI Credits
 

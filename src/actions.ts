@@ -1,4 +1,4 @@
-import streamDeck, { action, KeyDownEvent, KeyAction, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
+import streamDeck, { action, DidReceiveSettingsEvent, KeyDownEvent, KeyAction, SendToPluginEvent, SingletonAction, WillAppearEvent, WillDisappearEvent } from "@elgato/streamdeck";
 import { JsonObject } from "@elgato/utils";
 
 import { PiDisplayUpdater } from "./providers/types";
@@ -128,7 +128,36 @@ export class AntigravityAction extends QuotaAction<AntigravitySettings> {
 
 @action({ UUID: "au.jkang.codingtoolquotachecker.agy" })
 export class AgyQuotaAction extends QuotaAction<AgyQuotaSettings> {
-	constructor() { super(new AgyQuotaProvider(updatePiDisplay)); }
+	private readonly agyProvider: AgyQuotaProvider;
+
+	constructor() {
+		const provider = new AgyQuotaProvider(updatePiDisplay);
+		super(provider);
+		this.agyProvider = provider;
+	}
+
+	override async onKeyDown(ev: KeyDownEvent<AgyQuotaSettings>): Promise<void> {
+		lastPollTimestamps.set(ev.action.id, Date.now());
+		await this.agyProvider.check(ev.action as KeyAction<AgyQuotaSettings>, true);
+	}
+
+	override async onSendToPlugin(ev: SendToPluginEvent<JsonObject, AgyQuotaSettings>): Promise<void> {
+		if (ev.payload?.type !== "getAgyBuckets") return;
+		try {
+			const buckets = await this.agyProvider.getBuckets();
+			if (streamDeck.ui.action?.id === ev.action.id) {
+				await streamDeck.ui.sendToPropertyInspector({ type: "agyBuckets", buckets });
+			}
+		} catch {
+			if (streamDeck.ui.action?.id === ev.action.id) {
+				await streamDeck.ui.sendToPropertyInspector({ type: "agyBuckets", error: "Cannot read AGY quotas. Verify that AGY is installed and signed in, then reopen these settings." });
+			}
+		}
+	}
+
+	override async onDidReceiveSettings(ev: DidReceiveSettingsEvent<AgyQuotaSettings>): Promise<void> {
+		await this.agyProvider.check(ev.action as KeyAction<AgyQuotaSettings>, true);
+	}
 }
 
 @action({ UUID: "au.jkang.codingtoolquotachecker.openaicredits" })

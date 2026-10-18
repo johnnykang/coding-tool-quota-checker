@@ -4,6 +4,7 @@
   "description": "Stream Deck Plugin to check Copilot interactions quota",
   "type": "module",
   "scripts": {
+    "test": "node scripts/test-agy.mjs && node scripts/test-agy-pi.mjs",
     "build": "rollup -c",
     "watch": "rollup -c -w",
     "validate": "streamdeck validate au.jkang.codingtoolquotachecker.sdPlugin",

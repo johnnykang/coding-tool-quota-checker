@@ -9,7 +9,7 @@
         .wrap { padding: 10px; box-sizing: border-box; }
         .row { margin-bottom: 8px; }
         label { display: block; margin-bottom: 2px; color: #ccc; }
-        input[type="text"] { width: 100%; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; padding: 3px 5px; border-radius: 3px; }
+        select { width: 100%; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; padding: 3px 5px; border-radius: 3px; }
         #saveButton { margin-top: 10px; width: 100%; padding: 5px; cursor: pointer; background: #5C8ACC; border: none; color: white; border-radius: 3px; }
         #saveButton:hover { background: #3D6BB5; }
         #status { font-size: 9pt; color: #88cc88; height: 1.2em; }
@@ -23,14 +23,14 @@
             <div id="displayValue" style="background: #222; padding: 8px; border-radius: 3px; border: 1px solid #444; color: #fff; font-weight: bold; text-align: center; margin-bottom: 10px;">Waiting for data...</div>
         </div>
         <div class="row">
-            <label for="modelLabel">Model Label (Optional):</label>
-            <input type="text" id="modelLabel" placeholder="e.g. claude, gemini, gpt" />
-            <p class="hint">Leave blank to show the most critical (lowest) quota across all models.</p>
+            <label for="bucketId">Quota Group and Window:</label>
+            <select id="bucketId"><option value="">Automatic (highest usage)</option></select>
+            <p class="hint" id="bucketStatus">Read quota choices from AGY...</p>
         </div>
         <div class="row">
             <label for="displayMode">Display Mode:</label>
             <select id="displayMode" style="width: 100%; box-sizing: border-box; background: #333; color: white; border: 1px solid #555; padding: 3px 5px; border-radius: 3px;">
-                <option value="quota">Quota Percentage</option>
+                <option value="quota">Usage Percentage</option>
                 <option value="aiCredits">AI Credits</option>
             </select>
             <p class="hint">Select what to display on the button.</p>
@@ -39,13 +39,33 @@
             <button id="saveButton">Save Settings</button>
         </div>
         <p id="status"></p>
-        <p class="hint">This action reads the AGY CLI quota cache at <code>~/.gemini/tmp/real_quota_cache.json</code>. The AGY CLI statusline hook must have run at least once to populate this cache.</p>
+        <p class="hint">Requires AGY CLI 1.1.11 or later. Sign in through AGY under the same user account as Stream Deck. This action queries AGY directly every five minutes. Press the button to refresh.</p>
     </div>
 
     <script>
         let websocket = null;
         let pluginUUID = null;
         let actionInfo = {};
+        let savedSettings = {};
+        let buckets = [];
+
+        function showBuckets(selectedId = savedSettings.bucketId || '') {
+            const select = document.getElementById('bucketId');
+            select.replaceChildren(new Option(savedSettings.modelLabel
+                ? 'Automatic (previous model: ' + savedSettings.modelLabel + ')'
+                : 'Automatic (highest usage)', ''));
+            for (const bucket of buckets) {
+                select.add(new Option(bucket.group + ' / ' + bucket.window + ' / ' + bucket.name, bucket.id));
+            }
+            if (selectedId && !buckets.some(bucket => bucket.id === selectedId)) {
+                select.add(new Option('Unavailable: ' + selectedId, selectedId));
+            }
+            select.value = selectedId;
+        }
+
+        function sendToPlugin(payload) {
+            websocket.send(JSON.stringify({ event: 'sendToPlugin', action: actionInfo.action, context: pluginUUID, payload }));
+        }
 
         function connectElgatoStreamDeckSocket(inPort, inPluginUUID, inRegisterEvent, inInfo, inActionInfo) {
             pluginUUID = inPluginUUID;
@@ -63,24 +83,30 @@
                     "event": "getSettings",
                     "context": pluginUUID
                 }));
+                sendToPlugin({ type: 'getAgyBuckets' });
             };
 
             websocket.onmessage = function (evt) {
                 const jsonObj = JSON.parse(evt.data);
                 if (jsonObj.event === 'didReceiveSettings') {
-                    const s = jsonObj.payload.settings;
-                    if (s.modelLabel) document.getElementById('modelLabel').value = s.modelLabel;
-                    if (s.displayMode) document.getElementById('displayMode').value = s.displayMode;
+                    savedSettings = jsonObj.payload.settings || {};
+                    document.getElementById('displayMode').value = savedSettings.displayMode || 'quota';
+                    showBuckets();
                 } else if (jsonObj.event === 'sendToPropertyInspector') {
                     if (jsonObj.payload && jsonObj.payload.type === 'updateDisplay') {
                         document.getElementById('displayValue').innerText = jsonObj.payload.value;
+                    } else if (jsonObj.payload && jsonObj.payload.type === 'agyBuckets') {
+                        buckets = jsonObj.payload.buckets || [];
+                        showBuckets(document.getElementById('bucketId').value);
+                        document.getElementById('bucketStatus').innerText = jsonObj.payload.error
+                            || 'Each choice selects one quota window. Automatic shows the highest usage.';
                     }
                 }
             };
 
             document.getElementById('saveButton').addEventListener('click', function () {
                 const payload = {
-                    modelLabel: document.getElementById('modelLabel').value,
+                    bucketId: document.getElementById('bucketId').value,
                     displayMode: document.getElementById('displayMode').value
                 };
                 websocket.send(JSON.stringify({
